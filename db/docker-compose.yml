@@ -1,0 +1,25 @@
+
+services:
+  db:
+    image: postgres:17.4
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    env_file:
+      - dev.env
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    env_file:
+      - dev.env
+
+
+volumes:
+  postgres_data:
