@@ -78,7 +78,70 @@ Todos los endpoints requieren autenticación JWT. Las rutas de administrador req
 
 ## Autenticación
 
-Para rutas protegidas, incluir el token JWT en el encabezado de Autorización:
+### Nuevos Endpoints de Autenticación
+
+- `POST /api/auth/register`
+  - Registrar un nuevo usuario
+  - No requiere autenticación
+  - Cuerpo de la solicitud:
+    ```json
+    {
+      "first_name": "Juan",
+      "last_name": "Pérez",
+      "email": "juan@ejemplo.com",
+      "password": "contraseñasegura",
+      "phone": "1234567890",
+      "address": "Calle Principal 123, Ciudad"
+    }
+    ```
+  - Respuesta exitosa (201 Created):
+    ```json
+    {
+      "message": "Cliente registrado exitosamente",
+      "customer": {
+        "customer_id": 1,
+        "first_name": "Juan",
+        "last_name": "Pérez",
+        "email": "juan@ejemplo.com",
+        "phone": "1234567890",
+        "address": "Calle Principal 123, Ciudad",
+        "admin": false,
+        "created_at": "2025-03-10T23:32:40.000Z",
+        "updated_at": "2025-03-10T23:32:40.000Z"
+      }
+    }
+    ```
+
+- `POST /api/auth/login`
+  - Iniciar sesión de usuario
+  - No requiere autenticación
+  - Cuerpo de la solicitud:
+    ```json
+    {
+      "email": "juan@ejemplo.com",
+      "password": "contraseñasegura"
+    }
+    ```
+  - Respuesta exitosa (200 OK):
+    ```json
+    {
+      "message": "Inicio de sesión exitoso",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "customer": {
+        "customer_id": 1,
+        "first_name": "Juan",
+        "last_name": "Pérez",
+        "email": "juan@ejemplo.com",
+        "phone": "1234567890",
+        "address": "Calle Principal 123, Ciudad",
+        "admin": false,
+        "created_at": "2025-03-10T23:32:40.000Z",
+        "updated_at": "2025-03-10T23:32:40.000Z"
+      }
+    }
+    ```
+
+Para rutas protegidas, incluir el token JWT recibido en el encabezado de Autorización:
 ```
 Authorization: Bearer your_jwt_token
 ```

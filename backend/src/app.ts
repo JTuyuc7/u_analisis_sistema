@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import express from 'express';
 import { createConnection } from 'typeorm';
 import customerRoutes from './routes/customerRoutes';
+import authRoutes from './routes/authRoutes';
 import { Customer } from './entities/Customer';
 import dotenv from 'dotenv';
 
@@ -16,6 +17,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/customers', customerRoutes);
+app.use('/api/auth', authRoutes);
+
 createConnection({
     type: "postgres",
     host: process.env.DB_HOST || "localhost",

@@ -14,6 +14,9 @@ export class Customer {
     @Column({ length: 100, unique: true })
     email: string;
 
+    @Column({ length: 255 }) // Add password field
+    password: string;
+
     @Column({ length: 20, nullable: true })
     phone: string;
 
