@@ -1,34 +1,34 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class Customer {
     @PrimaryGeneratedColumn()
-    customer_id: number;
+      customer_id: number;
 
     @Column({ length: 50 })
-    first_name: string;
+      first_name: string;
 
     @Column({ length: 50 })
-    last_name: string;
+      last_name: string;
 
     @Column({ length: 100, unique: true })
-    email: string;
+      email: string;
 
-    @Column({ length: 255 }) // Add password field
-    password: string;
+    @Column({ length: 255, nullable: false }) // Password field, not nullable
+      password: string;
 
     @Column({ length: 20, nullable: true })
-    phone: string;
+      phone: string;
 
     @Column({ type: 'text', nullable: true })
-    address: string;
+      address: string;
 
     @Column({ default: false })
-    admin: boolean;
+      admin: boolean;
 
     @CreateDateColumn()
-    created_at: Date;
+      created_at: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+      updated_at: Date;
 }

@@ -20,24 +20,24 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/auth', authRoutes);
 
 createConnection({
-    type: "postgres",
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "5432"),
-    username: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "bank_db",
-    entities: [Customer],
-    synchronize: process.env.NODE_ENV !== "production", // Disable in production
-    logging: process.env.NODE_ENV !== "production"
+  type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'bank_db',
+  entities: [Customer],
+  synchronize: process.env.NODE_ENV !== 'production', // Disable in production
+  logging: process.env.NODE_ENV !== 'production'
 })
-.then(() => {
+  .then(() => {
     console.log('Database connected successfully');
     app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
-})
-.catch((error) => {
+  })
+  .catch((error) => {
     console.error('Error connecting to the database:', error);
-});
+  });
 
 export default app;

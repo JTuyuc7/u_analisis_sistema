@@ -142,7 +142,7 @@ Todos los endpoints requieren autenticación JWT. Las rutas de administrador req
     ```
 
 Para rutas protegidas, incluir el token JWT recibido en el encabezado de Autorización:
-```
+```javascript
 Authorization: Bearer your_jwt_token
 ```
 
@@ -157,3 +157,31 @@ La API devuelve códigos de estado HTTP y mensajes de error apropiados:
 - 403: Prohibido
 - 404: No encontrado
 - 500: Error del servidor
+
+## Linting y Control de Calidad
+
+El proyecto utiliza ESLint para mantener un código consistente y de alta calidad.
+
+### Comandos de Linting
+
+```bash
+# Ejecutar el linter
+npm run lint
+
+# Corregir automáticamente los problemas de linting
+npm run lint:fix
+```
+
+### Configuración de Linting
+
+- El linter está configurado en `.eslintrc.json` con reglas específicas para TypeScript
+- Se ejecuta automáticamente en cada Pull Request a través de GitHub Actions
+- Reglas principales:
+  - Indentación de 2 espacios
+  - Comillas simples
+  - Punto y coma obligatorio
+  - Reglas específicas de TypeScript
+
+### Integración Continua
+
+El linting se ejecuta automáticamente en cada Pull Request que afecte a archivos en el directorio `backend/`. Esto asegura que todo el código nuevo cumpla con los estándares del proyecto antes de ser fusionado.
