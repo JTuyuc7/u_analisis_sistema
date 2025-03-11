@@ -20,6 +20,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('🚀 ~ register ~ hashedPassword:', hashedPassword);
 
     // Create new customer
     const customer = customerRepository.create({
