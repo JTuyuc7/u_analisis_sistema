@@ -63,14 +63,35 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
 // List all accounts for a customer
 export const listAccounts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const accountRepository = AppDataSource.getRepository(Account);
-    const accounts = await accountRepository.find({
-      where: { customer: { customer_id: req.user?.id } },
-      select: ['account_id', 'account_number', 'account_type', 'account_name', 'balance', 'status', 'created_at'],
-      order: { created_at: 'DESC' }
+    const accounts = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+      const customerRepository = transactionalEntityManager.getRepository(Customer);
+
+      // Get customer for the audit log
+      const customer = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      // Get accounts
+      const accounts = await accountRepository.find({
+        where: { customer: { customer_id: req.user?.id } },
+        select: ['account_id', 'account_number', 'account_type', 'account_name', 'balance', 'status', 'created_at'],
+        order: { created_at: 'DESC' }
+      });
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer,
+        operation: 'ACCOUNT_LISTING',
+        details: `Listed ${accounts.length} accounts`
+      }));
+
+      return accounts;
     });
 
-    res.json(accounts);
+    res.json({ accounts: accounts || [] , msg: 'Listed accounts successfully' });
   } catch (error) {
     console.error('Error listing accounts:', error);
     res.status(500).json({ message: 'Error retrieving accounts' });
@@ -81,51 +102,59 @@ export const listAccounts = async (req: Request, res: Response): Promise<void> =
 export const transferMoney = async (req: Request, res: Response): Promise<void> => {
   const { fromAccountId, toAccountId, amount, description } = req.body;
 
+  let parsedAmount = parseFloat(amount);
+
   try {
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
       const accountRepository = transactionalEntityManager.getRepository(Account);
       const transactionRepository = transactionalEntityManager.getRepository(Transaction);
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
 
-      // Get and lock both accounts
-      const fromAccount = await accountRepository.findOne({ 
-        where: { account_id: fromAccountId },
-        relations: ['customer'],
-        lock: { mode: 'pessimistic_write' }
-      });
-      const toAccount = await accountRepository.findOne({
-        where: { account_id: toAccountId },
-        relations: ['customer'],
-        lock: { mode: 'pessimistic_write' }
-      });
+      // Get accounts with their associated customers using query builder
+      const fromAccount = await accountRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.customer', 'customer')
+      .where('account.account_number = :id', { id: fromAccountId })
+      .getOne();
+
+      const toAccount = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :id', { id: toAccountId })
+        .getOne();
 
       if (!fromAccount || !toAccount) {
         throw new Error('One or both accounts not found');
       }
 
-      if (fromAccount.balance < amount) {
-        throw new Error('Insufficient funds');
+      if (fromAccount.customer.customer_id !== req.user?.id) { 
+        throw new Error('You are not authorized to perform this operation');
       }
 
-      // Perform transfer
-      fromAccount.balance -= amount;
-      toAccount.balance += amount;
+      if (fromAccount.balance < parsedAmount) {
+        throw new Error('Insufficient funds');
+      }
+      
+      // Update balances
+      fromAccount.balance = Number(fromAccount.balance) - parsedAmount;
+      toAccount.balance = Number(toAccount.balance) + parsedAmount;
 
+      // Save updated accounts
       await transactionalEntityManager.save([fromAccount, toAccount]);
 
       // Create transactions
       await transactionRepository.save(transactionRepository.create({
         account: fromAccount,
         transaction_type: 'transfer',
-        amount: -amount,
+        amount: -parsedAmount,
         description,
         related_account_id: toAccount.account_id
       }));
 
       await transactionRepository.save(transactionRepository.create({
         account: toAccount,
-        transaction_type: 'transfer',
-        amount: amount,
+        transaction_type: 'deposit',
+        amount: parsedAmount,
         description,
         related_account_id: fromAccount.account_id
       }));
@@ -134,7 +163,7 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
       await auditLogRepository.save(auditLogRepository.create({
         customer: fromAccount.customer,
         operation: 'MONEY_TRANSFER',
-        details: `Transferred ${amount} from account ${fromAccount.account_number} to ${toAccount.account_number}`
+        details: `Transferred ${parsedAmount} from account ${fromAccount.account_number} to ${toAccount.account_number}`
       }));
     });
 
@@ -150,14 +179,25 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
   const accountId = parseInt(req.params.accountId);
 
   try {
-    const transactionRepository = AppDataSource.getRepository(Transaction);
-    const transactions = await transactionRepository.find({
-      where: { account: { account_id: accountId } },
-      order: { transaction_date: 'DESC' },
-      relations: ['account']
+    const transactionList = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+      const transactions = await transactionRepository.find({
+        where: { account: { account_id: accountId } },
+        order: { transaction_date: 'DESC' },
+        relations: ['account']
+      });
+
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: transactions[0].account.customer,
+        operation: 'TRANSACTION_LISTING',
+        details: `Listed ${transactions.length} transactions for account ${accountId}`
+      }));
+      
+      return transactions;
     });
 
-    res.json(transactions);
+    res.json({ transactionList, msg: 'Listed transactions successfully' });
   } catch (error) {
     console.error('Error listing transactions:', error);
     res.status(500).json({ message: 'Error retrieving transactions' });

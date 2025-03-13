@@ -11,7 +11,7 @@ router.use(authenticateToken);
 router.post('/', createAccount);
 
 // List all accounts for a customer
-router.get('/customer/:customerId', listAccounts);
+router.get('/customer/list', listAccounts);
 
 // Transfer money between accounts
 router.post('/transfer', transferMoney);
