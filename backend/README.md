@@ -318,3 +318,44 @@ El proyecto utiliza Husky para ejecutar automáticamente el linting antes de cad
 ### Integración Continua
 
 El linting se ejecuta automáticamente en cada Pull Request que afecte a archivos en el directorio `backend/`. Esto asegura que todo el código nuevo cumpla con los estándares del proyecto antes de ser fusionado.
+
+## Documentación de la API con Swagger
+
+La API está documentada usando Swagger/OpenAPI. Esto proporciona una interfaz interactiva para explorar y probar todos los endpoints disponibles.
+
+### Acceso a la documentación Swagger
+
+Una vez que el servidor esté en ejecución, puede acceder a la documentación interactiva en:
+
+```
+http://localhost:4001/api-docs
+```
+
+### Características de la documentación Swagger
+
+- **Exploración visual**: Interfaz gráfica que muestra todos los endpoints organizados por grupos.
+- **Pruebas interactivas**: Permite realizar solicitudes reales a la API directamente desde la interfaz.
+- **Documentación detallada**: Muestra parámetros requeridos, esquemas de respuesta y códigos de estado HTTP.
+- **Autenticación integrada**: Soporte para probar endpoints protegidos usando tokens JWT.
+
+### Autenticación en Swagger UI
+
+Para probar endpoints protegidos que requieren autenticación:
+
+1. Primero, realice una solicitud POST a `/api/auth/login` para obtener un token JWT.
+2. Haga clic en el botón "Authorize" (Autorizar) en la parte superior de la página Swagger UI.
+3. Ingrese su token en el formato: `Bearer su_token_jwt` (sin las comillas).
+4. Haga clic en "Authorize" y cierre el diálogo.
+
+Ahora podrá probar todos los endpoints protegidos sin recibir errores de autenticación.
+
+### Documentación de los endpoints
+
+Cada endpoint está documentado con:
+- Descripción de la funcionalidad
+- Parámetros requeridos
+- Esquemas de solicitud y respuesta
+- Posibles códigos de estado
+- Requisitos de autenticación
+
+Esta documentación se genera automáticamente a partir de los comentarios JSDoc en los archivos de rutas, proporcionando siempre información actualizada de la API.
