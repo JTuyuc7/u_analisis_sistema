@@ -1,7 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Account } from './Account';
 
 @Entity()
 export class Customer {
+    @OneToMany(() => Account, account => account.customer)
+      accounts: Account[];
+
     @PrimaryGeneratedColumn()
       customer_id: number;
 

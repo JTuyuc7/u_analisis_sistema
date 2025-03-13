@@ -31,7 +31,9 @@ CREATE TABLE transaction (
     amount DECIMAL(15, 2) NOT NULL,
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description TEXT,
-    FOREIGN KEY (account_id) REFERENCES account(account_id)
+    related_account_id INTEGER,  -- For transfers, stores the other account involved
+    FOREIGN KEY (account_id) REFERENCES account(account_id),
+    FOREIGN KEY (related_account_id) REFERENCES account(account_id)
 );
 
 CREATE TABLE loan (
@@ -54,6 +56,17 @@ CREATE TABLE audit_logs (
     log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
 );
+
+-- Add some sample transactions
+-- INSERT INTO transaction (account_id, transaction_type, amount, description, related_account_id)
+-- VALUES 
+--     (1, 'transfer', -500.00, 'Initial transfer test', 2),
+--     (2, 'transfer', 500.00, 'Initial transfer test', 1);
+
+-- -- Add some sample audit logs
+-- INSERT INTO audit_logs (customer_id, operation, details)
+-- VALUES 
+--     (1, 'MONEY_TRANSFER', 'Transferred 500.00 from account 1234567890 to 0987654321');
 
 
 INSERT INTO customer (first_name, last_name, email, phone, address, password, admin)

@@ -1,19 +1,30 @@
-const typescript = require('@typescript-eslint/eslint-plugin');
+// import typescript from '@typescript-eslint/eslint-plugin';
 const typescriptParser = require('@typescript-eslint/parser');
+// import typescriptParser from '@typescript-eslint/parser';
+const typescript = require('@typescript-eslint/eslint-plugin');
+const js = require('@eslint/js');
+// import js from '@eslint/js';
+// import globals from 'globals';
+const globals = require('globals')
 
 module.exports = [
+  js.configs.recommended,
   {
+    ignores: ['src/migrations/**/*.ts'],
     files: ['src/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
+        project: './tsconfig.json',
         ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json'
+        sourceType: 'module'
       },
+      globals: {
+        ...globals.node
+      }
     },
     plugins: {
-      '@typescript-eslint': typescript,
+      '@typescript-eslint': typescript
     },
     rules: {
       ...typescript.configs['recommended'].rules,
@@ -27,6 +38,6 @@ module.exports = [
         'argsIgnorePattern': '^_',
         'varsIgnorePattern': '^_'
       }]
-    },
-  },
+    }
+  }
 ];

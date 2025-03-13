@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import express from 'express';
-import { createConnection } from 'typeorm';
 import customerRoutes from './routes/customerRoutes';
 import authRoutes from './routes/authRoutes';
-import { Customer } from './entities/Customer';
+import accountRoutes from './routes/accountRoutes';
+import seedRoutes from './routes/seedRoutes';
+import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -18,25 +19,18 @@ app.use(express.json());
 // Routes
 app.use('/api/customers', customerRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api', seedRoutes);
 
-createConnection({
-  type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'bank_db',
-  entities: [Customer],
-  synchronize: process.env.NODE_ENV !== 'production', // Disable in production
-  logging: process.env.NODE_ENV !== 'production'
-})
+// Initialize database connection
+AppDataSource.initialize()
   .then(() => {
     console.log('Database connected successfully');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
-  .catch((error) => {
+  .catch((error: Error) => {
     console.error('Error connecting to the database:', error);
   });
 
