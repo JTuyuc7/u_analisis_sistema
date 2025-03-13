@@ -112,10 +112,10 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
 
       // Get accounts with their associated customers using query builder
       const fromAccount = await accountRepository
-      .createQueryBuilder('account')
-      .leftJoinAndSelect('account.customer', 'customer')
-      .where('account.account_number = :id', { id: fromAccountId })
-      .getOne();
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :id', { id: fromAccountId })
+        .getOne();
 
       const toAccount = await accountRepository
         .createQueryBuilder('account')
