@@ -1,10 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 interface JwtPayload {
-    id: number;
-    email: string;
-    admin: boolean;
+  id: number;
+  email: string;
+  admin: boolean;
 }
 
 // Augment the Express Request interface
@@ -18,7 +22,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(' ')[0];
 
   if (!token) {
     res.status(401).json({ message: 'Authentication token is required' });

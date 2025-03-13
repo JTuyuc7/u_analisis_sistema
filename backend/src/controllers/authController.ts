@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
+import { AppDataSource } from '../data-source';
 import { Customer } from '../entities/Customer';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
 // Register a new customer
 export const register = async (req: Request, res: Response): Promise<void> => {
-  console.log('register');
   try {
-    const customerRepository = getRepository(Customer);
+    const customerRepository = AppDataSource.getRepository(Customer);
     const { first_name, last_name, email, password, phone, address, isAdmin = false } = req.body;
 
     // Check if user already exists
@@ -20,7 +19,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('🚀 ~ register ~ hashedPassword:', hashedPassword);
 
     // Create new customer
     const customer = customerRepository.create({
@@ -51,8 +49,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 // Login customer
 export const login = async (req: Request, res: Response): Promise<void> => {
+  console.log('from Login');
   try {
-    const customerRepository = getRepository(Customer);
+    const customerRepository = AppDataSource.getRepository(Customer);
+    console.log('🚀 ~ login ~ customerRepository:', customerRepository);
+    
     const { email, password } = req.body;
 
     // Find customer by email
@@ -85,9 +86,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Remove password from response
     const { password: _, ...customerWithoutPassword } = customer;
 
+    // Set token in response header
+    res.setHeader('Authorization', `Bearer ${token}`);
+
     res.json({
       message: 'Login successful',
-      token,
       customer: customerWithoutPassword
     });
   } catch (error) {

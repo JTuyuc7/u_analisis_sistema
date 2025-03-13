@@ -1,0 +1,165 @@
+import { Request, Response } from 'express';
+import { Account } from '../entities/Account';
+import { Customer } from '../entities/Customer';
+import { Transaction } from '../entities/Transaction';
+import { AuditLog } from '../entities/AuditLog';
+import { generateAccountNumber } from '../utils/generateAccountNumber';
+import { AppDataSource } from '../data-source';
+
+// Create a new account
+export const createAccount = async (req: Request, res: Response): Promise<void> => {
+  const { accountType, accountName } = req.body;
+
+  try {
+    //* TODO: Implement a method to validate that a customer can have up to 5 accounts
+    const accountRepository = AppDataSource.getRepository(Account);
+    const customerRepository = AppDataSource.getRepository(Customer);
+
+    // Check if customer exists
+    const customer = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
+    if (!customer) {
+      res.status(404).json({ message: 'Customer not found' });
+      return;
+    }
+
+    // Generate unique account number
+    const accountNumber = generateAccountNumber();
+
+    // Create new account
+    const newAccount = accountRepository.create({
+      customer,
+      account_number: accountNumber,
+      account_type: accountType,
+      account_name: accountName,
+      balance: 0
+    });
+
+    // Save account and create audit log
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(newAccount);
+
+      // Create audit log
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+      await auditLogRepository.save(auditLogRepository.create({
+        customer,
+        operation: 'ACCOUNT_CREATION',
+        details: `Created new ${accountType} account: ${accountNumber}`
+      }));
+    });
+
+    res.status(201).json({
+      message: 'Account created successfully',
+      account: {
+        account_id: newAccount.account_id,
+        account_number: newAccount.account_number
+      }
+    });
+  } catch (error) {
+    console.error('Error creating account:', error);
+    res.status(500).json({ message: 'Error creating account' });
+  }
+};
+
+// List all accounts for a customer
+export const listAccounts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const accountRepository = AppDataSource.getRepository(Account);
+    const accounts = await accountRepository.find({
+      where: { customer: { customer_id: req.user?.id } },
+      select: ['account_id', 'account_number', 'account_type', 'account_name', 'balance', 'status', 'created_at'],
+      order: { created_at: 'DESC' }
+    });
+
+    res.json(accounts);
+  } catch (error) {
+    console.error('Error listing accounts:', error);
+    res.status(500).json({ message: 'Error retrieving accounts' });
+  }
+};
+
+// Transfer money between accounts
+export const transferMoney = async (req: Request, res: Response): Promise<void> => {
+  const { fromAccountId, toAccountId, amount, description } = req.body;
+
+  try {
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+
+      // Get and lock both accounts
+      const fromAccount = await accountRepository.findOne({ 
+        where: { account_id: fromAccountId },
+        relations: ['customer'],
+        lock: { mode: 'pessimistic_write' }
+      });
+      const toAccount = await accountRepository.findOne({
+        where: { account_id: toAccountId },
+        relations: ['customer'],
+        lock: { mode: 'pessimistic_write' }
+      });
+
+      if (!fromAccount || !toAccount) {
+        throw new Error('One or both accounts not found');
+      }
+
+      if (fromAccount.balance < amount) {
+        throw new Error('Insufficient funds');
+      }
+
+      // Perform transfer
+      fromAccount.balance -= amount;
+      toAccount.balance += amount;
+
+      await transactionalEntityManager.save([fromAccount, toAccount]);
+
+      // Create transactions
+      await transactionRepository.save(transactionRepository.create({
+        account: fromAccount,
+        transaction_type: 'transfer',
+        amount: -amount,
+        description,
+        related_account_id: toAccount.account_id
+      }));
+
+      await transactionRepository.save(transactionRepository.create({
+        account: toAccount,
+        transaction_type: 'transfer',
+        amount: amount,
+        description,
+        related_account_id: fromAccount.account_id
+      }));
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: fromAccount.customer,
+        operation: 'MONEY_TRANSFER',
+        details: `Transferred ${amount} from account ${fromAccount.account_number} to ${toAccount.account_number}`
+      }));
+    });
+
+    res.json({ message: 'Transfer completed successfully' });
+  } catch (error) {
+    console.error('Error transferring money:', error);
+    res.status(500).json({ message: error instanceof Error ? error.message : 'Error transferring money' });
+  }
+};
+
+// List all transactions for a given account
+export const listTransactions = async (req: Request, res: Response): Promise<void> => {
+  const accountId = parseInt(req.params.accountId);
+
+  try {
+    const transactionRepository = AppDataSource.getRepository(Transaction);
+    const transactions = await transactionRepository.find({
+      where: { account: { account_id: accountId } },
+      order: { transaction_date: 'DESC' },
+      relations: ['account']
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error listing transactions:', error);
+    res.status(500).json({ message: 'Error retrieving transactions' });
+  }
+};
