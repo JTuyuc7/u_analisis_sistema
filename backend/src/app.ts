@@ -1,11 +1,14 @@
 import 'reflect-metadata';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 import customerRoutes from './routes/customerRoutes';
 import authRoutes from './routes/authRoutes';
 import accountRoutes from './routes/accountRoutes';
 import seedRoutes from './routes/seedRoutes';
 import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
+import { swaggerOptions } from './swaggerConfig';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +24,11 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api', seedRoutes);
+
+// Swagger documentation
+const specs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve);
+app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
 
 // Initialize database connection
 AppDataSource.initialize()
