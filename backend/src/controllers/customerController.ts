@@ -2,15 +2,6 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Customer } from '../entities/Customer';
 
-// Admin middleware check
-const checkAdmin = (req: Request, res: Response, next: () => void) => {
-  if (!req.user?.admin) {
-    res.status(403).json({ message: 'Access denied. Admin privileges required.' });
-    return;
-  }
-  next();
-};
-
 export const getCustomers = async (req: Request, res: Response): Promise<void> => {
   try {
     const customerRepository = AppDataSource.getRepository(Customer);
@@ -149,6 +140,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
     }
 
     // Don't allow password updates through this endpoint
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...updateData } = req.body;
     customerRepository.merge(customer, updateData);
     await customerRepository.save(customer);

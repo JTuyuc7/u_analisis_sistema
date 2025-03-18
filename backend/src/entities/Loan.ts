@@ -4,26 +4,26 @@ import { Customer } from './Customer';
 @Entity()
 export class Loan {
     @PrimaryGeneratedColumn()
-    loan_id: number;
+      loan_id: number;
 
     @ManyToOne(() => Customer, customer => customer.loans)
-    customer: Customer;
+      customer: Customer;
 
     @Column('decimal', { precision: 15, scale: 2 })
-    loan_amount: number;
+      loan_amount: number;
 
     @Column('decimal', { precision: 5, scale: 2 })
-    interest_rate: number;
+      interest_rate: number;
 
     @Column()
-    loan_term: number;
+      loan_term: number;
 
     @Column({ default: 'pending' })
-    status: string;
+      status: string;
 
     @CreateDateColumn()
-    created_at: Date;
+      created_at: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+      updated_at: Date;
 }

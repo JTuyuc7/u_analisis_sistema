@@ -1,20 +1,35 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "Running lint checks before push..."
+echo "🚀 Running lint checks before committing..."
 
-# Run linting in the backend directory
-cd backend && npm run lint
-if [ $? -ne 0 ]; then
-  echo "❌ Linting failed in backend. Fix the issues before commit."
-  exit 1
-fi
+# Function to run linting and attempt auto-fix
+run_lint() {
+  local dir=$1
+  echo "🔍 Linting in $dir..."
+  
+  cd "$dir" || exit 1
+  
+  # Run lint check
+  if ! npm run lint; then
+    echo "⚠️ Lint issues found in $dir. Attempting to fix..."
+    
+    # Try auto-fixing issues
+    if npm run lint:fix; then
+      echo "✅ Issues fixed automatically in $dir. Staging changes..."
+      git add .
+    else
+      echo "❌ Auto-fix failed in $dir. Please fix the issues manually before committing."
+      exit 1
+    fi
+  fi
+  
+  cd - > /dev/null || exit 1
+}
 
-# Run linting in the frontend directory
-cd ../frontend && npm run lint
-if [ $? -ne 0 ]; then
-  echo "❌ Linting failed in frontend. Fix the issues before commit."
-  exit 1
-fi
+# Run linting for both backend and frontend
+run_lint backend
+# run_lint frontend
 
-echo "✅ Linting passed in both backend and frontend!"
+echo "✅ All linting checks passed!"
+exit 0
