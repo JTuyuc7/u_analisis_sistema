@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running lint checks before push..."
+
+# Run linting in the backend directory
+cd backend && npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed in backend. Fix the issues before commit."
+  exit 1
+fi
+
+# Run linting in the frontend directory
+cd ../frontend && npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed in frontend. Fix the issues before commit."
+  exit 1
+fi
+
+echo "✅ Linting passed in both backend and frontend!"
