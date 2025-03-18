@@ -5,6 +5,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import customerRoutes from './routes/customerRoutes';
 import authRoutes from './routes/authRoutes';
 import accountRoutes from './routes/accountRoutes';
+import profileRoutes from './routes/profileRoutes';
 import seedRoutes from './routes/seedRoutes';
 import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use('/api/customers', customerRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
+app.use('/api', profileRoutes);
 app.use('/api', seedRoutes);
 
 // Swagger documentation
