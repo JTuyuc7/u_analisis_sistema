@@ -68,7 +68,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticateToken, getCustomers);
+router.get('/', authenticateToken, isAdmin, getCustomers);
 
 /**
  * @swagger
@@ -97,7 +97,7 @@ router.get('/', authenticateToken, getCustomers);
  *       404:
  *         description: Customer not found
  */
-router.get('/:id', authenticateToken, getCustomerById);
+router.get('/:id', authenticateToken, isAdmin, getCustomerById);
 
 /**
  * @swagger

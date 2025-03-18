@@ -1,10 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Account } from './Account';
+import { Loan } from './Loan';
 
 @Entity()
 export class Customer {
     @OneToMany(() => Account, account => account.customer)
       accounts: Account[];
+
+    @OneToMany(() => Loan, loan => loan.customer)
+      loans: Loan[];
 
     @PrimaryGeneratedColumn()
       customer_id: number;
