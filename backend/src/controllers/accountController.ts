@@ -203,3 +203,43 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Error retrieving transactions' });
   }
 };
+
+export const findValidAccount = async (req: Request, res: Response): Promise<void> => {
+
+  try {
+    const result = await AppDataSource.manager.transaction(async (transactionalEntityManager) => { 
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      // const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+
+      const accountUser = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :id', { id: req.params.accountId })
+        .getOne();
+
+      if (!accountUser) {
+        throw new Error('Account not found');
+      }
+
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: accountUser.customer,
+        operation: 'ACCOUNT_FIND',
+        details: `Find account ${accountUser.account_number} for transaction operation`
+      }));
+
+      const { account_number, account_type, customer: { customer_id, first_name, last_name } } = accountUser;
+      return { accountDetails: { account_number, account_type, customer_id, first_name, last_name } };
+    });
+
+    if (!result) {
+      res.status(404).json({ message: 'Account not found or invalid account number provided' });
+      return;
+    }
+
+    res.json({ message: 'Account found', account: result?.accountDetails });
+  } catch (error) {
+    console.error('Error finding account:', error);
+    res.status(500).json({ message: 'Error finding account' });
+  }
+};

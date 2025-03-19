@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAccount, listAccounts, transferMoney, listTransactions } from '../controllers/accountController';
+import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount } from '../controllers/accountController';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -178,6 +178,30 @@ const router = Router();
  *         description: Account not found
  */
 
+/**
+ * @swagger
+ * /api/accounts/{accountId}:
+ *   get:
+ *     summary: Find if an account exists
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Account ID
+ *     responses:
+ *       200:
+ *         description: Account found
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Account not found
+ */
+
 // All routes require authentication
 router.use(authenticateToken);
 
@@ -192,5 +216,8 @@ router.post('/transfer', transferMoney);
 
 // List all transactions for a given account
 router.get('/:accountId/transactions', listTransactions);
+
+// Find if an account exists
+router.get('/:accountId', findValidAccount);
 
 export default router;
