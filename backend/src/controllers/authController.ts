@@ -49,10 +49,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 // Login customer
 export const login = async (req: Request, res: Response): Promise<void> => {
-  console.log('from Login');
   try {
     const customerRepository = AppDataSource.getRepository(Customer);
-    console.log('🚀 ~ login ~ customerRepository:', customerRepository);
     
     const { email, password } = req.body;
 

@@ -10,12 +10,21 @@ import seedRoutes from './routes/seedRoutes';
 import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
 import { swaggerOptions } from './swaggerConfig';
+import cors from 'cors';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Enable CORS
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*', // your frontend URL
+  credentials: true, // to allow credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware
 app.use(express.json());
