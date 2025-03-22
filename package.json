@@ -12,6 +12,9 @@
   "lint-staged": {
     "backend/**/*.{ts,tsx}": [
       "cd backend && npm run lint -- --max-warnings=0"
+    ],
+    "fronted/**/*.{ts,tsx,js,jsx}": [
+      "cd fronted && npm run lint -- --max-warnings=0"
     ]
   }
 }

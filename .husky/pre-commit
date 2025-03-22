@@ -29,7 +29,7 @@ run_lint() {
 
 # Run linting for both backend and frontend
 run_lint backend
-# run_lint frontend
+run_lint frontend
 
 echo "✅ All linting checks passed!"
 exit 0
