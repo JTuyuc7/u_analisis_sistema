@@ -1,59 +1,145 @@
 'use client'
 
+import React, { useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/redux/store'
 import Link from 'next/link'
-import { 
-  FaHome, 
-  FaHistory, 
-  FaUser, 
-  FaExchangeAlt,
-  FaUserShield
-} from 'react-icons/fa'
+import {
+  AppBar,
+  Box,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material'
+import {
+  Home as HomeIcon,
+  History as HistoryIcon,
+  Person as PersonIcon,
+  SwapHoriz as SwapHorizIcon,
+  Security as SecurityIcon,
+  Menu as MenuIcon
+} from '@mui/icons-material'
 
 const Sidebar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false)
   const { user } = useSelector((state: RootState) => state.auth)
-  console.log("🚀 ~ Sidebar ~ user:", user)
   const router = useRouter()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen)
+  }
 
   const menuItems = [
-    { icon: FaHome, label: 'Home', path: '/dashboard/home' },
-    { icon: FaExchangeAlt, label: 'Transactions', path: '/dashboard/transactions' },
-    { icon: FaHistory, label: 'History', path: '/dashboard/history' },
-    { icon: FaUser, label: 'Profile', path: '/dashboard/profile' },
+    { icon: HomeIcon, label: 'Home', path: '/dashboard/home' },
+    { icon: SwapHorizIcon, label: 'Transactions', path: '/dashboard/transactions' },
+    { icon: HistoryIcon, label: 'History', path: '/dashboard/history' },
+    { icon: PersonIcon, label: 'Profile', path: '/dashboard/profile' },
   ]
 
   // Add admin route if user has admin role
   if (user.admin) {
     menuItems.push({ 
-      icon: FaUserShield, 
+      icon: SecurityIcon, 
       label: 'Admin', 
       path: '/dashboard/admin' 
     })
   }
 
+  const drawerContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h5" component="h1" align="center" gutterBottom>
+          Dashboard
+        </Typography>
+      </Box>
+      
+      <List>
+        {menuItems.map((item) => (
+          <ListItem 
+            key={item.path}
+            component={Link}
+            href={item.path}
+            onClick={() => isMobile && handleDrawerToggle()}
+            sx={{ 
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+              borderRadius: 1,
+              mb: 1
+            }}
+          >
+            <ListItemIcon>
+              <item.icon />
+            </ListItemIcon>
+            <ListItemText primary={item.label} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  )
+
+  if (isMobile) {
+    return (
+      <>
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div">
+              Dashboard
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="temporary"
+          anchor="left"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            '& .MuiDrawer-paper': { 
+              width: 250,
+              boxSizing: 'border-box',
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+      </>
+    )
+  }
+
   return (
-    <div className="h-screen w-64 bg-gray-800 text-white p-4">
-      <div className="text-2xl font-bold mb-8 text-center">
-        Dashboard
-      </div>
-      <nav>
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.path}>
-              <Link 
-                href={item.path}
-                className="flex items-center gap-3 p-3 rounded hover:bg-gray-700 transition-colors"
-              >
-                <item.icon className="text-xl" />
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <Box sx={{ 
+      width: 250,
+      height: '100vh',
+      bgcolor: 'background.paper',
+      borderRight: 1,
+      borderColor: 'divider',
+      overflowY: 'auto'
+    }}>
+      {drawerContent}
+    </Box>
   )
 }
 
