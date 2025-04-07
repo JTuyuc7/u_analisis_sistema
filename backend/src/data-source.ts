@@ -6,6 +6,7 @@ import { Transaction } from './entities/Transaction';
 import { AuditLog } from './entities/AuditLog';
 import { Loan } from './entities/Loan';
 import dotenv from 'dotenv';
+import { Card } from './entities/Card';
 
 dotenv.config();
 
@@ -18,7 +19,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'bank_db',
   synchronize: false,
   logging: process.env.NODE_ENV !== 'production',
-  entities: [Customer, Account, Transaction, AuditLog, Loan],
+  entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
   migrations: ['src/migrations/*.ts'],
   subscribers: []
 });

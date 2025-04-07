@@ -7,6 +7,13 @@ export class Customer {
     @OneToMany(() => Account, account => account.customer)
       accounts: Account[];
 
+    async hasReachedAccountLimit(): Promise<boolean> {
+      if (!this.accounts) {
+        return false;
+      }
+      return this.accounts.filter(account => account.status === 'active').length >= 3;
+    }
+
     @OneToMany(() => Loan, loan => loan.customer)
       loans: Loan[];
 
