@@ -3,12 +3,15 @@ import { Account } from '../entities/Account';
 import { Customer } from '../entities/Customer';
 import { Transaction } from '../entities/Transaction';
 import { AuditLog } from '../entities/AuditLog';
+import { Card } from '../entities/Card';
 import { generateAccountNumber } from '../utils/generateAccountNumber';
+import { generateCardDetails } from '../utils/generateCardDetails';
 import { AppDataSource } from '../data-source';
+import * as bcrypt from 'bcrypt';
 
 // Create a new account
 export const createAccount = async (req: Request, res: Response): Promise<void> => {
-  const { accountType, accountName } = req.body;
+  const { accountType, accountName, security_pin } = req.body;
 
   try {
     //* TODO: Implement a method to validate that a customer can have up to 5 accounts
@@ -22,6 +25,8 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    const hashedSecurityPin = await bcrypt.hash(security_pin, 10);
+
     // Generate unique account number
     const accountNumber = generateAccountNumber();
 
@@ -31,19 +36,33 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
       account_number: accountNumber,
       account_type: accountType,
       account_name: accountName,
+      security_pin: hashedSecurityPin,
       balance: 0
     });
 
-    // Save account and create audit log
+    // Save account, create default card and audit log
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      // Save the account first
       await transactionalEntityManager.save(newAccount);
+
+      // Create default card
+      const cardDetails = generateCardDetails();
+      const cardRepository = transactionalEntityManager.getRepository(Card);
+      const newCard = cardRepository.create({
+        card_number: cardDetails.cardNumber,
+        expiration_date: cardDetails.expirationDate,
+        security_code: cardDetails.securityCode,
+        account: newAccount,
+        status: 'active'
+      });
+      await transactionalEntityManager.save(newCard);
 
       // Create audit log
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
       await auditLogRepository.save(auditLogRepository.create({
         customer,
         operation: 'ACCOUNT_CREATION',
-        details: `Created new ${accountType} account: ${accountNumber}`
+        details: `Created new ${accountType} account: ${accountNumber} with default card`
       }));
     });
 

@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Customer } from './Customer';
 import { Transaction } from './Transaction';
+import { Card } from './Card';
 
 @Entity()
 export class Account {
@@ -25,6 +26,9 @@ export class Account {
   @Column({ default: 'active' })
     status: string;
 
+  @Column({ length: 255 })
+    security_pin: string;
+
   @CreateDateColumn()
     created_at: Date;
 
@@ -33,4 +37,15 @@ export class Account {
 
   @OneToMany(() => Transaction, transaction => transaction.account)
     transactions: Transaction[];
+
+  @OneToMany(() => Card, card => card.account)
+    cards: Card[];
+
+  async hasReachedCardLimit(): Promise<boolean> {
+    if (!this.cards) {
+      return false;
+    }
+    return this.cards.filter(card => card.status === 'active').length >= 2;
+  }
+
 }
