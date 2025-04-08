@@ -4,6 +4,18 @@ import { seedInitialData } from '../seeders/initialData';
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/seed:
+ *   post:
+ *     summary: Seed the database with initial data
+ *     tags: [Database]
+ *     responses:
+ *       200:
+ *         description: Database seeded successfully
+ *       500:
+ *         description: Error seeding database
+ */
 router.post('/seed', async (req, res) => {
   try {
     await seedInitialData(AppDataSource);
