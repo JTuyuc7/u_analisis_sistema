@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
-import { Card } from '../entities/Card';
 import { Transaction } from '../entities/Transaction';
 import { AuditLog } from '../entities/AuditLog';
 import { CardRepository } from '../repositories/CardRepository';
