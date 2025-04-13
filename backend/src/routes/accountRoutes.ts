@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount } from '../controllers/accountController';
-import { authenticateToken } from '../middleware/authMiddleware';
+import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance } from '../controllers/accountController';
+import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -219,5 +219,42 @@ router.get('/:accountId/transactions', listTransactions);
 
 // Find if an account exists
 router.get('/:accountId', findValidAccount);
+
+/**
+ * @swagger
+ * /api/accounts/change-balance:
+ *   post:
+ *     summary: Change account balance (Admin only)
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - accountId
+ *               - newBalance
+ *             properties:
+ *               accountId:
+ *                 type: integer
+ *                 description: Account ID
+ *               newBalance:
+ *                 type: number
+ *                 format: float
+ *                 description: New balance for the account
+ *     responses:
+ *       200:
+ *         description: Account balance updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Account not found
+ */
+router.post('/change-balance', isAdmin, changeAccountBalance);
 
 export default router;

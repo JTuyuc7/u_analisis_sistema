@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Customer } from '../entities/Customer';
+import { AuditLog } from '../entities/AuditLog';
 
 export const getCustomers = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -64,6 +65,7 @@ export const getCustomerById = async (req: Request, res: Response): Promise<void
 
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log(req.body.admin, 'req.body.admin');
     const customerRepository = AppDataSource.getRepository(Customer);
     
     // Check if email already exists
@@ -188,5 +190,62 @@ export const deleteCustomer = async (req: Request, res: Response): Promise<void>
   } catch (error) {
     console.error('Error deleting customer:', error);
     res.status(500).json({ message: 'Error deleting customer' });
+  }
+};
+
+export const setAdminStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      res.status(400).json({ message: 'Email is required' });
+      return;
+    }
+
+    const customerRepository = AppDataSource.getRepository(Customer);
+    const auditLogRepository = AppDataSource.getRepository(AuditLog);
+    
+    const customer = await customerRepository.findOne({ 
+      where: { email } 
+    });
+    console.log('🚀 ~ setAdminStatus ~ customer:', customer);
+
+    if (!customer) {
+      res.status(404).json({ message: 'Customer not found' });
+      return;
+    }
+
+    // Get the admin user who made the request
+    const adminUser = (req as any).user;
+
+    // Update admin status by saving the entity
+    customer.admin = true;
+    try {
+      await customerRepository.save(customer);
+    } catch (error: any) {
+      console.error('Error updating admin status:', error);
+      throw new Error(`Failed to update admin status: ${error.message}`);
+    }
+
+    // Fetch the updated customer data
+    const updatedCustomer = await customerRepository.findOne({
+      where: { email },
+      select: ['customer_id', 'email', 'admin']
+    });
+
+    // Create audit log
+    await auditLogRepository.save(auditLogRepository.create({
+      customer: customer,
+      operation: 'SET_ADMIN_PRIVILEGES',
+      details: `Admin privileges granted to ${email} by ${adminUser.email}`
+    }));
+
+    res.json({
+      message: 'Admin privileges granted successfully',
+      customer: updatedCustomer
+    });
+  } catch (error) {
+    console.error('Error setting admin status:', error);
+    res.status(500).json({ message: 'Error setting admin status' });
   }
 };
