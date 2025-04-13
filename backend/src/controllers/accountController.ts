@@ -262,3 +262,59 @@ export const findValidAccount = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Error finding account' });
   }
 };
+
+export const changeAccountBalance = async (req: Request, res: Response): Promise<void> => {
+  const { accountId, newBalance } = req.body;
+
+  if (!req.user?.admin) {
+    res.status(403).json({ message: 'Unauthorized: Admin access required' });
+    return;
+  }
+
+  try {
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+      const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+
+      // const account = await accountRepository.findOne({
+      //   where: { account_id: accountId },
+      //   relations: ['customer']
+      // });
+
+      const account = await accountRepository
+        .createQueryBuilder('account')
+        .where('account.account_number = :id', { id: accountId })
+        .getOne();
+
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      let oldBalance = account.balance;
+
+      // const balanceDifference = newBalance - oldBalance;
+      account.balance = newBalance;
+      await transactionalEntityManager.save(account);
+
+      // Create a transaction record
+      await transactionRepository.save(transactionRepository.create({
+        account: account,
+        transaction_type: 'admin_balance_change from `' + oldBalance + ' to ' + newBalance,
+        amount: Math.abs(newBalance),
+        description: 'Admin balance adjustment',
+      }));
+
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: account.customer,
+        operation: 'BALANCE_CHANGE',
+        details: `Admin changed balance for account ${account.account_number} from ${oldBalance} to ${newBalance}`
+      }));
+    });
+
+    res.json({ message: 'Account balance updated successfully' });
+  } catch (error) {
+    console.error('Error changing account balance:', error);
+    res.status(500).json({ message: 'Error changing account balance' });
+  }
+};

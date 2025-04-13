@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getCustomers, getCustomerById, createCustomer, updateCustomer, deleteCustomer } from '../controllers/customerController';
+import { getCustomers, getCustomerById, createCustomer, updateCustomer, deleteCustomer, setAdminStatus } from '../controllers/customerController';
 import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -188,5 +188,55 @@ router.put('/:id', authenticateToken, isAdmin, updateCustomer);
  *         description: Customer not found
  */
 router.delete('/:id', authenticateToken, isAdmin, deleteCustomer);
+
+/**
+ * @swagger
+ * /api/customers/set-admin:
+ *   post:
+ *     summary: Set admin permissions for a customer
+ *     tags: [Customers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email of the customer to grant admin permissions
+ *     responses:
+ *       200:
+ *         description: Admin privileges granted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 customer:
+ *                   type: object
+ *                   properties:
+ *                     customer_id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     admin:
+ *                       type: boolean
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Error setting admin status
+ */
+router.post('/set-admin', authenticateToken, isAdmin, setAdminStatus);
 
 export default router;

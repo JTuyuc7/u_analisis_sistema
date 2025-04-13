@@ -40,7 +40,7 @@ export const seedInitialData = async (connection: Connection): Promise<void> => 
       phone: '123-456-7890',
       address: '123 Main St',
       password: hashedPassword,
-      admin: true
+      admin: false
     });
 
     const customer2 = customerRepository.create({

@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "dev": "concurrently \"npm run dev:db\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:db": "cd db && docker-compose up"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.0.0"
   },
