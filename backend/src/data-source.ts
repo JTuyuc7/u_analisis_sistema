@@ -30,15 +30,8 @@ export const AppDataSource = new DataSource({
   migrations: process.env.NODE_ENV === 'production' ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
   subscribers: [],
   extra: {
-    max: 20,
-    connectionTimeoutMillis: 5000,
+    max: 5, // Reduce max connections for serverless environment
+    connectionTimeoutMillis: 10000, // Increase timeout
+    idleTimeoutMillis: 60000, // Add idle timeout
   },
 });
-
-// Function to close idle connections
-export const closeIdleConnections = async () => {
-  const connection = AppDataSource.manager.connection;
-  if (connection.isConnected) {
-    await connection.query('SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND state = $2', [connection.options.database, 'idle']);
-  }
-};

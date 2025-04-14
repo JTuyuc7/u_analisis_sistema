@@ -9,7 +9,7 @@ import profileRoutes from './routes/profileRoutes';
 import seedRoutes from './routes/seedRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import testRoutes from './routes/testRoute';
-import { AppDataSource, closeIdleConnections } from './data-source';
+import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
 import { swaggerOptions } from './swaggerConfig';
 import cors from 'cors';
@@ -65,13 +65,6 @@ initializeDb().then(() => {
     });
   }
 
-  // Close idle connections after each request
-  app.use(async (req, res, next) => {
-    res.on('finish', async () => {
-      await closeIdleConnections();
-    });
-    next();
-  });
 });
 
 export default app;
