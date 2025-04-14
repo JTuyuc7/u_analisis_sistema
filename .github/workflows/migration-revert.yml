@@ -1,0 +1,31 @@
+name: Revert Last TypeORM Migration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  revert-migration:
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build TypeScript
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Revert Last Migration
+        working-directory: ./backend
+        run: npm run migration:revert
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
