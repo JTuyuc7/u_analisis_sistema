@@ -8,6 +8,7 @@ import accountRoutes from './routes/accountRoutes';
 import profileRoutes from './routes/profileRoutes';
 import seedRoutes from './routes/seedRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import testRoutes from './routes/testRoute';
 import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
 import { swaggerOptions } from './swaggerConfig';
@@ -37,6 +38,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', seedRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/test', testRoutes);
 
 // Swagger documentation
 const specs = swaggerJsdoc(swaggerOptions);
