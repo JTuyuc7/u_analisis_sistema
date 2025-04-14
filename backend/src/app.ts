@@ -48,13 +48,16 @@ app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
 // Initialize database connection
 AppDataSource.initialize()
   .then(() => {
-    console.log('Database connected successfully');
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    console.log('✅ Database connected');
+    // Start local server ONLY if not running on Vercel
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running at http://localhost:${PORT}`);
+      });
+    }
   })
   .catch((error: Error) => {
-    console.error('Error connecting to the database:', error);
+    console.error('❌ Error connecting to the database:', error);
   });
 
 export default app;
