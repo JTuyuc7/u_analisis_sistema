@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
   username: !isProduction ? (process.env.DB_USER || 'postgres') : undefined,
   password: !isProduction ? (process.env.DB_PASSWORD || 'postgres') : undefined,
   database: !isProduction ? (process.env.DB_NAME || 'bank_db') : undefined,
-  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
+  ssl: isProduction ? { rejectUnauthorized: true } : false,
   synchronize: false,
   logging: true, // Enable logging for troubleshooting
   entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
@@ -32,7 +32,6 @@ export const AppDataSource = new DataSource({
   extra: {
     max: 20,
     connectionTimeoutMillis: 5000,
-    ssl: true,
   },
 });
 
