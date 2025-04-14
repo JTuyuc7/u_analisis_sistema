@@ -1,7 +1,8 @@
 {
+  "version": 2,
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs@20.x"
+      "runtime": "nodejs18.x"
     }
   },
   "routes": [
