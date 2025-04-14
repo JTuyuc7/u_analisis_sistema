@@ -122,7 +122,7 @@ export class InitialSchema1741820057326 implements MigrationInterface {
                 IF (
                     SELECT COUNT(*)
                     FROM account
-                    WHERE "customerCustomerId" = NEW."customerCustomerId"
+                    WHERE "customer_id" = NEW."customer_id"
                     AND status = 'active'
                 ) >= 3 THEN
                     RAISE EXCEPTION 'Customer cannot have more than 3 active accounts';

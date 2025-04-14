@@ -31,51 +31,47 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 
-// Routes
-app.use('/api/customers', customerRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/accounts', accountRoutes);
-app.use('/api', profileRoutes);
-app.use('/api', seedRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/test', testRoutes);
-
-// Swagger documentation
-const specs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve);
-app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
-
-// Initialize database connection if not already initialized
+// Initialize database connection
 const initializeDb = async () => {
-  if (!AppDataSource.isInitialized) {
-    try {
-      await AppDataSource.initialize();
-      console.log('✅ Database connected');
-    } catch (error) {
-      console.error('❌ Error connecting to the database:', error);
-    }
+  try {
+    await AppDataSource.initialize();
+    console.log('✅ Database connected');
+  } catch (error) {
+    console.error('❌ Error connecting to the database:', error);
+    process.exit(1);
   }
 };
 
-// Start local server ONLY if not running on Vercel
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-  });
-}
+// Initialize database before setting up routes
+initializeDb().then(() => {
+  // Routes
+  app.use('/api/customers', customerRoutes);
+  app.use('/api/auth', authRoutes);
+  app.use('/api/accounts', accountRoutes);
+  app.use('/api', profileRoutes);
+  app.use('/api', seedRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/test', testRoutes);
 
-// Middleware to ensure database connection and manage idle connections
-app.use(async (req, res, next) => {
-  await initializeDb();
-  next();
-});
+  // Swagger documentation
+  const specs = swaggerJsdoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve);
+  app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
 
-// Close idle connections after each request
-app.use(async (req, res, next) => {
-  res.on('finish', async () => {
-    await closeIdleConnections();
+  // Start local server ONLY if not running on Vercel
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    });
+  }
+
+  // Close idle connections after each request
+  app.use(async (req, res, next) => {
+    res.on('finish', async () => {
+      await closeIdleConnections();
+    });
+    next();
   });
-  next();
 });
 
 export default app;

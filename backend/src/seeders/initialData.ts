@@ -73,7 +73,7 @@ export const seedInitialData = async (connection: Connection): Promise<void> => 
     // Insert accounts directly
     await connection.query(`
       INSERT INTO "account" 
-      ("customerCustomerId", "account_number", "account_type", "account_name", "balance", "security_pin", "status", "created_at", "updated_at")
+      ("customer_id", "account_number", "account_type", "account_name", "balance", "security_pin", "status", "created_at", "updated_at")
       VALUES 
       ($1, $2, 'checking', 'John Doe Checking', 1000.00, '1234', 'active', NOW(), NOW()),
       ($3, $4, 'savings', 'Jane Smith Savings', 5000.00, '5678', 'active', NOW(), NOW())

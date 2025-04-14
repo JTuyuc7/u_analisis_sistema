@@ -32,7 +32,7 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
 
     // Create new account
     const newAccount = accountRepository.create({
-      customer: { customer_id: customer.customer_id },
+      customer,
       account_number: accountNumber,
       account_type: accountType,
       account_name: accountName,
@@ -110,7 +110,7 @@ export const listAccounts = async (req: Request, res: Response): Promise<void> =
       return accounts;
     });
 
-    res.json({ accounts: accounts || [] , msg: 'Listed accounts successfully' });
+    res.json({ accounts: accounts || [], msg: 'Listed accounts successfully' });
   } catch (error) {
     console.error('Error listing accounts:', error);
     res.status(500).json({ message: 'Error retrieving accounts' });
@@ -146,14 +146,14 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
         throw new Error('One or both accounts not found');
       }
 
-      if (fromAccount.customer.customer_id !== req.user?.id) { 
+      if (fromAccount.customer.customer_id !== req.user?.id) {
         throw new Error('You are not authorized to perform this operation');
       }
 
       if (fromAccount.balance < parsedAmount) {
         throw new Error('Insufficient funds');
       }
-      
+
       // Update balances
       fromAccount.balance = Number(fromAccount.balance) - parsedAmount;
       toAccount.balance = Number(toAccount.balance) + parsedAmount;
@@ -212,7 +212,7 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
         operation: 'TRANSACTION_LISTING',
         details: `Listed ${transactions.length} transactions for account ${accountId}`
       }));
-      
+
       return transactions;
     });
 
@@ -226,7 +226,7 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
 export const findValidAccount = async (req: Request, res: Response): Promise<void> => {
 
   try {
-    const result = await AppDataSource.manager.transaction(async (transactionalEntityManager) => { 
+    const result = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
       const accountRepository = transactionalEntityManager.getRepository(Account);
       // const transactionRepository = transactionalEntityManager.getRepository(Transaction);
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);

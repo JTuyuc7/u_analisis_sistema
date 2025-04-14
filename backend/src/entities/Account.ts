@@ -9,7 +9,7 @@ export class Account {
     account_id: number;
 
   @ManyToOne(() => Customer, customer => customer.accounts)
-  @JoinColumn({ name: 'customerCustomerId' })
+  @JoinColumn({ name: 'customer_id' })
     customer: Customer;
 
   @Column({ unique: true })

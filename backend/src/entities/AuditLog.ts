@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Customer } from './Customer';
 
 @Entity('audit_logs')
@@ -7,6 +7,7 @@ export class AuditLog {
       log_id: number;
 
     @ManyToOne(() => Customer)
+    @JoinColumn({ name: 'customer_id' })
       customer: Customer;
 
     @Column()
