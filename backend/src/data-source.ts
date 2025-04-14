@@ -12,29 +12,30 @@ dotenv.config();
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-export const AppDataSource = new DataSource(
-  isProduction
-    ? {
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // required for Neon
-      synchronize: false,
-      logging: false,
-      entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
-      migrations: ['dist/migrations/*.js'], // compiled version
-      subscribers: [],
-    }
-    : {
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || 'bank_db',
-      synchronize: false,
-      logging: true,
-      entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
-      migrations: ['src/migrations/*.ts'],
-      subscribers: [],
-    }
-);
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  url: isProduction ? process.env.DATABASE_URL : undefined,
+  host: !isProduction ? (process.env.DB_HOST || 'localhost') : undefined,
+  port: !isProduction ? parseInt(process.env.DB_PORT || '5432') : undefined,
+  username: !isProduction ? (process.env.DB_USER || 'postgres') : undefined,
+  password: !isProduction ? (process.env.DB_PASSWORD || 'postgres') : undefined,
+  database: !isProduction ? (process.env.DB_NAME || 'bank_db') : undefined,
+  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+  synchronize: false,
+  logging: !isProduction,
+  entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
+  migrations: isProduction ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
+  subscribers: [],
+  extra: {
+    max: 20,
+    connectionTimeoutMillis: 5000,
+  },
+});
+
+// Function to close idle connections
+export const closeIdleConnections = async () => {
+  const connection = AppDataSource.manager.connection;
+  if (connection.isConnected) {
+    await connection.query('SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND state = $2', [connection.options.database, 'idle']);
+  }
+};

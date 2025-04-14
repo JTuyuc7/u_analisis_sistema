@@ -9,7 +9,7 @@ import profileRoutes from './routes/profileRoutes';
 import seedRoutes from './routes/seedRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import testRoutes from './routes/testRoute';
-import { AppDataSource } from './data-source';
+import { AppDataSource, closeIdleConnections } from './data-source';
 import dotenv from 'dotenv';
 import { swaggerOptions } from './swaggerConfig';
 import cors from 'cors';
@@ -45,19 +45,37 @@ const specs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve);
 app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
 
-// Initialize database connection
-AppDataSource.initialize()
-  .then(() => {
-    console.log('✅ Database connected');
-    // Start local server ONLY if not running on Vercel
-    if (!process.env.VERCEL) {
-      app.listen(PORT, () => {
-        console.log(`🚀 Server running at http://localhost:${PORT}`);
-      });
+// Initialize database connection if not already initialized
+const initializeDb = async () => {
+  if (!AppDataSource.isInitialized) {
+    try {
+      await AppDataSource.initialize();
+      console.log('✅ Database connected');
+    } catch (error) {
+      console.error('❌ Error connecting to the database:', error);
     }
-  })
-  .catch((error: Error) => {
-    console.error('❌ Error connecting to the database:', error);
+  }
+};
+
+// Start local server ONLY if not running on Vercel
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
+}
+
+// Middleware to ensure database connection and manage idle connections
+app.use(async (req, res, next) => {
+  await initializeDb();
+  next();
+});
+
+// Close idle connections after each request
+app.use(async (req, res, next) => {
+  res.on('finish', async () => {
+    await closeIdleConnections();
+  });
+  next();
+});
 
 export default app;
