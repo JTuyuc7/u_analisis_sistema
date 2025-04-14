@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: 🐘 Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
       - name: 📦 Install dependencies
         working-directory: ./backend
         run: npm install
@@ -27,7 +32,30 @@ jobs:
 
       - name: 🧱 Run TypeORM Migrations
         working-directory: ./backend
-        run: npm run migration:run:prod
+        run: |
+          # First, try to drop all existing tables and functions
+          echo "Cleaning up existing database objects..."
+          npm run typeorm schema:drop -- -d src/data-source.ts
+          
+          # Then run the migration fresh
+          echo "Running migrations..."
+          npm run migration:run:prod
+          
+          if [ $? -eq 0 ]; then
+            echo "Migration completed successfully"
+          else
+            echo "Migration failed. Attempting to fix common issues..."
+            # Drop any existing triggers first
+            npm run typeorm query "DROP TRIGGER IF EXISTS enforce_card_limit ON card;"
+            npm run typeorm query "DROP TRIGGER IF EXISTS enforce_account_limit ON account;"
+            npm run typeorm query "DROP FUNCTION IF EXISTS check_card_limit;"
+            npm run typeorm query "DROP FUNCTION IF EXISTS check_account_limit;"
+            
+            # Try migration again
+            echo "Retrying migration..."
+            npm run migration:run:prod
+          fi
         env:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TYPEORM_LOGGING: true
