@@ -26,6 +26,7 @@
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/pg": "^8.6.5",
+    "@vendia/serverless-express": "^4.12.6",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
