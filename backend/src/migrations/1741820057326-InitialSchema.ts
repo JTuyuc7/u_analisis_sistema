@@ -24,7 +24,7 @@ export class InitialSchema1741820057326 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE "account" (
                 "account_id" SERIAL PRIMARY KEY,
-                "customer_id" integer REFERENCES "customer"("customer_id"),
+                "customerCustomerId" integer REFERENCES "customer"("customer_id"),
                 "account_number" varchar NOT NULL UNIQUE,
                 "account_type" varchar NOT NULL,
                 "account_name" varchar NOT NULL,
