@@ -26,15 +26,20 @@ import {
   Person as PersonIcon,
   SwapHoriz as SwapHorizIcon,
   Security as SecurityIcon,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material'
+
+const DRAWER_WIDTH = 250
+const APPBAR_HEIGHT = 64
 
 const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
@@ -45,54 +50,83 @@ const Sidebar = () => {
     { icon: SwapHorizIcon, label: 'Transactions', path: '/dashboard/transactions' },
     { icon: HistoryIcon, label: 'History', path: '/dashboard/history' },
     { icon: PersonIcon, label: 'Profile', path: '/dashboard/profile' },
+    { icon: SettingsIcon, label: 'Ajustes', path: '/dashboard/settings' },
+    // { icon: LogoutIcon, label: 'Logout', path: '/auth/logout' },
   ]
 
-  // Add admin route if user has admin role
   if (user.admin) {
-    menuItems.push({ 
-      icon: SecurityIcon, 
-      label: 'Admin', 
-      path: '/dashboard/admin' 
+    menuItems.push({
+      icon: SecurityIcon,
+      label: 'Admin',
+      path: '/dashboard/admin'
     })
   }
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h5" component="h1" align="center" gutterBottom>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', borderRight: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{ p: 3, height: APPBAR_HEIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="h5" component="h1" align="center">
           Dashboard
         </Typography>
       </Box>
-      
-      <List>
-        {menuItems.map((item) => (
-          <ListItem 
-            key={item.path}
-            component={Link}
-            href={item.path}
-            onClick={() => isMobile && handleDrawerToggle()}
-            sx={{ 
+      <List sx={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          {menuItems.map((item) => (
+            <ListItem
+              key={item.path}
+              component={Link}
+              href={item.path}
+              onClick={() => isMobile && handleDrawerToggle()}
+              sx={{
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+                borderRadius: 1,
+                mb: 1
+              }}
+            >
+              <ListItemIcon>
+                <item.icon />
+              </ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItem>
+          ))}
+        </Box>
+        <Box>
+          <ListItem
+            onClick={() => {
+              router.push('/auth/logout')
+              handleDrawerToggle()
+            }}
+            sx={{
               '&:hover': {
                 bgcolor: 'action.hover',
               },
               borderRadius: 1,
-              mb: 1
+              mb: 1,
+              marginBottom: 4
             }}
           >
             <ListItemIcon>
-              <item.icon />
+              <LogoutIcon />
             </ListItemIcon>
-            <ListItemText primary={item.label} />
+            <ListItemText primary="Logout" />
           </ListItem>
-        ))}
+        </Box>
       </List>
     </Box>
   )
 
-  if (isMobile) {
-    return (
-      <>
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+  return (
+    <>
+      {isMobile && (
+        <AppBar
+          position="fixed"
+          sx={{
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            height: APPBAR_HEIGHT,
+          }}
+        >
           <Toolbar>
             <IconButton
               color="inherit"
@@ -108,38 +142,47 @@ const Sidebar = () => {
             </Typography>
           </Toolbar>
         </AppBar>
-        <Drawer
-          variant="temporary"
-          anchor="left"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            '& .MuiDrawer-paper': { 
-              width: 250,
-              boxSizing: 'border-box',
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
-      </>
-    )
-  }
-
-  return (
-    <Box sx={{ 
-      width: 250,
-      height: '100vh',
-      bgcolor: 'background.paper',
-      borderRight: 1,
-      borderColor: 'divider',
-      overflowY: 'auto'
-    }}>
-      {drawerContent}
-    </Box>
+      )}
+      <Box
+        component="nav"
+        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
+      >
+        {isMobile ? (
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+            sx={{
+              '& .MuiDrawer-paper': {
+                width: DRAWER_WIDTH,
+                boxSizing: 'border-box',
+              },
+            }}
+          >
+            {drawerContent}
+          </Drawer>
+        ) : (
+          <Drawer
+            variant="permanent"
+            sx={{
+              '& .MuiDrawer-paper': {
+                width: DRAWER_WIDTH,
+                boxSizing: 'border-box',
+                height: '100vh',
+                position: 'fixed',
+                border: 'none'
+              },
+            }}
+            open
+          >
+            {drawerContent}
+          </Drawer>
+        )}
+      </Box>
+    </>
   )
 }
 
