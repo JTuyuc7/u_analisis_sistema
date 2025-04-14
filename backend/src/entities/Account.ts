@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
 import { Customer } from './Customer';
 import { Transaction } from './Transaction';
 import { Card } from './Card';
@@ -9,6 +9,7 @@ export class Account {
     account_id: number;
 
   @ManyToOne(() => Customer, customer => customer.accounts)
+  @JoinColumn({ name: 'customerCustomerId' })
     customer: Customer;
 
   @Column({ unique: true })

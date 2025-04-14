@@ -32,7 +32,7 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
 
     // Create new account
     const newAccount = accountRepository.create({
-      customer,
+      customer: { customer_id: customer.customer_id },
       account_number: accountNumber,
       account_type: accountType,
       account_name: accountName,

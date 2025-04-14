@@ -24,7 +24,7 @@ export class InitialSchema1741820057326 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE "account" (
                 "account_id" SERIAL PRIMARY KEY,
-                "customerCustomerId" integer REFERENCES "customer"("customer_id"),
+                "customer_id" integer REFERENCES "customer"("customer_id"),
                 "account_number" varchar NOT NULL UNIQUE,
                 "account_type" varchar NOT NULL,
                 "account_name" varchar NOT NULL,
@@ -122,7 +122,7 @@ export class InitialSchema1741820057326 implements MigrationInterface {
                 IF (
                     SELECT COUNT(*)
                     FROM account
-                    WHERE "customer_id" = NEW."customer_id"
+                    WHERE "customerCustomerId" = NEW."customerCustomerId"
                     AND status = 'active'
                 ) >= 3 THEN
                     RAISE EXCEPTION 'Customer cannot have more than 3 active accounts';
