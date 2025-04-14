@@ -1,0 +1,15 @@
+name: Seed Database
+
+on:
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Seed database
+        working-directory: ./backend
+        run: npm run seed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -1,0 +1,32 @@
+name: Run TypeORM Migrations
+
+on:
+  workflow_dispatch: # Makes this manually triggered
+
+jobs:
+  run-migrations:
+    name: Run DB Migrations
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: 🧾 Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: 🛠 Build TypeScript
+        working-directory: ./backend
+        run: npm run build
+
+      - name: 🧱 Run TypeORM Migrations
+        working-directory: ./backend
+        run: npm run migration:run:prod
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
