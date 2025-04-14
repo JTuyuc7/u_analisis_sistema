@@ -31,11 +31,8 @@ jobs:
         working-directory: ./backend
         run: |
           npm install -g vercel
-          vercel deploy --prod \
-            --token=$VERCEL_TOKEN \
-            --org $VERCEL_ORG_ID \
-            --project $VERCEL_PROJECT_ID \
-            --yes
+          vercel deploy --prod --yes --token=$VERCEL_TOKEN
+
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
