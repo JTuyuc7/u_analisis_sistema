@@ -12,6 +12,9 @@ dotenv.config();
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+console.log('Environment:', isProduction ? 'Production' : 'Development');
+console.log('Database URL provided:', !!process.env.DATABASE_URL);
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: isProduction ? process.env.DATABASE_URL : undefined,
@@ -20,15 +23,16 @@ export const AppDataSource = new DataSource({
   username: !isProduction ? (process.env.DB_USER || 'postgres') : undefined,
   password: !isProduction ? (process.env.DB_PASSWORD || 'postgres') : undefined,
   database: !isProduction ? (process.env.DB_NAME || 'bank_db') : undefined,
-  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
   synchronize: false,
-  logging: !isProduction,
+  logging: true, // Enable logging for troubleshooting
   entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
   migrations: isProduction ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
   subscribers: [],
   extra: {
     max: 20,
     connectionTimeoutMillis: 5000,
+    ssl: true,
   },
 });
 

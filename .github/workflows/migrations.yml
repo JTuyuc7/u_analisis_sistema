@@ -29,4 +29,5 @@ jobs:
         working-directory: ./backend
         run: npm run migration:run:prod
         env:
+          NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
