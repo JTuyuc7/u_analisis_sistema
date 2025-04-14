@@ -63,6 +63,31 @@ export class InitialSchema1741820057326 implements MigrationInterface {
             )
         `);
 
+        // Create Loan table
+        await queryRunner.query(`
+            CREATE TABLE "loan" (
+                "loan_id" SERIAL PRIMARY KEY,
+                "customer_id" integer REFERENCES "customer"("customer_id"),
+                "loan_amount" decimal(15,2) NOT NULL,
+                "interest_rate" decimal(5,2) NOT NULL,
+                "loan_term" integer NOT NULL,
+                "status" varchar DEFAULT 'pending',
+                "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+                "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+            )
+        `);
+
+        // Create Audit Logs table
+        await queryRunner.query(`
+            CREATE TABLE "audit_logs" (
+                "log_id" SERIAL PRIMARY KEY,
+                "customer_id" integer REFERENCES "customer"("customer_id"),
+                "operation" varchar NOT NULL,
+                "details" text,
+                "log_date" TIMESTAMP NOT NULL DEFAULT now()
+            )
+        `);
+
         // Create function to check card limit
         await queryRunner.query(`
             CREATE OR REPLACE FUNCTION check_card_limit()
@@ -114,31 +139,6 @@ export class InitialSchema1741820057326 implements MigrationInterface {
             FOR EACH ROW
             EXECUTE FUNCTION check_account_limit();
         `);
-
-        // Create Loan table
-        await queryRunner.query(`
-            CREATE TABLE "loan" (
-                "loan_id" SERIAL PRIMARY KEY,
-                "customer_id" integer REFERENCES "customer"("customer_id"),
-                "loan_amount" decimal(15,2) NOT NULL,
-                "interest_rate" decimal(5,2) NOT NULL,
-                "loan_term" integer NOT NULL,
-                "status" varchar DEFAULT 'pending',
-                "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-                "updated_at" TIMESTAMP NOT NULL DEFAULT now()
-            )
-        `);
-
-        // Create Audit Logs table
-        await queryRunner.query(`
-            CREATE TABLE "audit_logs" (
-                "log_id" SERIAL PRIMARY KEY,
-                "customer_id" integer REFERENCES "customer"("customer_id"),
-                "operation" varchar NOT NULL,
-                "details" text,
-                "log_date" TIMESTAMP NOT NULL DEFAULT now()
-            )
-        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
@@ -158,5 +158,4 @@ export class InitialSchema1741820057326 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE IF EXISTS "account"`);
         await queryRunner.query(`DROP TABLE IF EXISTS "customer"`);
     }
-
 }
