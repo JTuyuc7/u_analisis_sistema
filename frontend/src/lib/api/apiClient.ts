@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { cookies } from '../utils/cookies';
 
-const backendURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+const backendURL = process.env.NEXT_PUBLIC_API_URL || '';
 
 const apiPublicClient = axios.create({
   baseURL: `${backendURL}`,
