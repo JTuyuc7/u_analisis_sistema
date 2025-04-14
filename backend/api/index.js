@@ -1,4 +1,6 @@
-const serverlessExpress = require('@vendia/serverless-express');
 const app = require('../src/app').default;
 
-exports.handler = serverlessExpress({ app });
+// Export a request handler function
+module.exports = async (req, res) => {
+  return app(req, res);
+};
