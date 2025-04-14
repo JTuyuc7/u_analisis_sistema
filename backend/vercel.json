@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs20" 
+      "runtime": "nodejs@20.x"
     }
   },
   "routes": [
