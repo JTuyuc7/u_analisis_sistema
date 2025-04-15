@@ -13,7 +13,7 @@ const router = Router();
  *         description: Test route is working
  */
 router.get('/', (req, res) => {
-  res.status(200).json({ message: 'App from Render' });
+  res.status(200).json({ message: 'App from Render small change' });
 }
 );
 
