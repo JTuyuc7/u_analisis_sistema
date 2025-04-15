@@ -14,7 +14,6 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
   const { accountType, accountName, security_pin } = req.body;
 
   try {
-    //* TODO: Implement a method to validate that a customer can have up to 5 accounts
     const accountRepository = AppDataSource.getRepository(Account);
     const customerRepository = AppDataSource.getRepository(Customer);
 
@@ -22,6 +21,15 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
     const customer = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
     if (!customer) {
       res.status(404).json({ message: 'Customer not found' });
+      return;
+    }
+
+    // Count existing accounts for the customer
+    const accountCount = await accountRepository.count({ where: { customer: { customer_id: customer.customer_id } } });
+    
+    // Check if the customer already has 3 or more accounts
+    if (accountCount >= 3) {
+      res.status(400).json({ message: 'You cannot create more than 3 accounts, please contact our support channel.' });
       return;
     }
 

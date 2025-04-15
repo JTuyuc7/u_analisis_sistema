@@ -21,7 +21,7 @@ const apiPrivateClient = axios.create({
 apiPrivateClient.interceptors.request.use((config) => {
   const { token } = cookies.get();
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers['Authorization'] = `${token}`;
   }
   return config;
 });

@@ -1,28 +1,6 @@
 import { apiPublicClient } from '@/lib/api/apiClient'
+import { SignupUserState } from '@/lib/interfaces';
 import { z } from 'zod'
-
-interface SignupUserState {
-  state: {
-    name: string
-    last_name: string
-    email: string
-    phone: string
-    address: string
-    password: string
-    confirm_pass: string
-    msg?: string
-  },
-  errors?: {
-    name?: string
-    last_name?: string
-    email?: string
-    phone?: string
-    address?: string
-    password?: string
-    confirm_pass?: string
-  },
-  success?: boolean
-}
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Por favor ingresa tu nombre'),
@@ -82,7 +60,6 @@ export async function signupAction(formState: SignupUserState, formdata: FormDat
       address: validatedFields.data.address,
       password: validatedFields.data.password,
     })
-    console.log("🚀 ~ signupAction ~ response:", response)
 
     if (response.status !== 201) {
       return {
