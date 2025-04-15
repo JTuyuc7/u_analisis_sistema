@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
   username: !useConnectionString ? (process.env.DB_USER || 'postgres') : undefined,
   password: !useConnectionString ? (process.env.DB_PASSWORD || 'postgres') : undefined,
   database: !useConnectionString ? (process.env.DB_NAME || 'bank_db') : undefined,
-  ssl: useConnectionString ? { rejectUnauthorized: false } : false,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
   synchronize: false,
   logging: true, // Enable logging for troubleshooting
   entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
