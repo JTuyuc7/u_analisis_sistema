@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
   password: !useConnectionString ? (process.env.DB_PASSWORD || 'postgres') : undefined,
   database: !useConnectionString ? (process.env.DB_NAME || 'bank_db') : undefined,
   // ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   synchronize: false,
   logging: true, // Enable logging for troubleshooting
   entities: [Customer, Account, Transaction, AuditLog, Loan, Card],
@@ -34,6 +34,6 @@ export const AppDataSource = new DataSource({
     max: 5, // Reduce max connections for serverless environment
     connectionTimeoutMillis: 10000, // Increase timeout
     idleTimeoutMillis: 60000, // Add idle timeout
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   },
 });
