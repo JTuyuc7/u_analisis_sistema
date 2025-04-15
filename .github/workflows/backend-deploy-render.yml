@@ -1,0 +1,25 @@
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - backend/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+        #TODO: FIND OUT IF THIS IS NEEDED
+      # - name: Run migrations
+      #   working-directory: ./backend
+      #   run: npm run migrate:prod
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Trigger Render deployment
+        run: curl "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
