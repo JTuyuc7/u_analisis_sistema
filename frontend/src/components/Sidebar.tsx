@@ -54,7 +54,7 @@ const Sidebar = () => {
     // { icon: LogoutIcon, label: 'Logout', path: '/auth/logout' },
   ]
 
-  if (user.admin) {
+  if (user?.admin) {
     menuItems.push({
       icon: SecurityIcon,
       label: 'Admin',

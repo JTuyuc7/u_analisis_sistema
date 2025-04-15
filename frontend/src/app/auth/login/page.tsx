@@ -18,7 +18,7 @@ import {
   Alert
 } from '@mui/material'
 import { Brightness4, Brightness7, Login } from '@mui/icons-material'
-import { AuthInterface } from '@/lib/interfaces/authInteface'
+import { AuthInterface } from '@/lib/interfaces'
 
 export default function LoginPage() {
   const router = useRouter()
