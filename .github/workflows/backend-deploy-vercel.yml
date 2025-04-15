@@ -2,9 +2,6 @@ name: Deploy Backend to Vercel
 
 on:
   workflow_dispatch: # Manual trigger
-  push:
-    branches:
-      - master  # Change if you want a different deploy branch
 
 jobs:
   deploy:
