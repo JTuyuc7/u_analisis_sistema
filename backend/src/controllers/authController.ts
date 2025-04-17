@@ -10,6 +10,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const customerRepository = AppDataSource.getRepository(Customer);
     const { first_name, last_name, email, password, phone, address, isAdmin = false } = req.body;
 
+    // Password length validation
+    if (!password || password.length < 6) {
+      res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      return;
+    }
+
     // Check if user already exists
     const existingCustomer = await customerRepository.findOne({ where: { email } });
     if (existingCustomer) {

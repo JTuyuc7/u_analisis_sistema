@@ -8,7 +8,7 @@ services:
     env_file:
       - dev.env
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - proyecto_final_postgres_data:/var/lib/postgresql/data
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
