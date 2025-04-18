@@ -163,3 +163,52 @@ export async function getBalanceToTransfer(accountNumber: string): Promise<Recor
     throw new Error("Error fetching balance account");
   }
 }
+
+export async function getCardByAccountNumber(accountNumber: string) {
+  try {
+    const token = await getTokenFromCookie();
+    if (!token) {
+      return {
+        success: false,
+        data: {
+          card: null,
+          msg: "No token found",
+        }
+      };
+    }
+
+    const response = await axios.get(`${backendURL}/accounts/card/${accountNumber}`, {
+      headers: {
+        'Authorization': `${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        data: {
+          card: null,
+          msg: "Error fetching card details",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        card: response.data.card,
+        msg: response.data.message
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching card details:", error);
+    return {
+      success: false,
+      data: {
+        card: null,
+        msg: "Error fetching card details",
+      },
+    };
+  }
+}

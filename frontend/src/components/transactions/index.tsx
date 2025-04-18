@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux'
 import { setAccounts } from '@/lib/redux/slices/accountSlice'
 import CreateAccount from '../createAccounts'
 import TransferPage from '../transfer'
-
+import CheckBalanceMainContent from '../checkBalance'
 
 interface createAccountProps {
   accounts?: IAccountDataProps[]
@@ -52,6 +52,12 @@ const MakeTransfer = ({ onHandleCancelView }: ViewContentProps) => (
   </RenderContent>
 )
 
+const CheckBalance = ({onHandleCancelView}: ViewContentProps) => (
+  <RenderContent title="Check Balance" titleColor="primary.main">
+    <CheckBalanceMainContent onHandleCancelView={onHandleCancelView} />
+  </RenderContent>
+)
+
 export default function TransactionsPage({ accounts = [] }: createAccountProps) {
   const [selectedAction, setSelectedAction] = useState('')
   const dispatch = useDispatch()
@@ -73,8 +79,8 @@ export default function TransactionsPage({ accounts = [] }: createAccountProps) 
         return <CreateNewAccount onHandleCancelView={handleCancelView} />
       case 'make-transfer':
         return <MakeTransfer onHandleCancelView={handleCancelView} />
-      case 'check-account-balance':
-        return <DefaultViewPage />
+      case 'check-balance':
+        return <CheckBalance onHandleCancelView={handleCancelView} />
       case 'default-view':
         return <DefaultViewPage />
       default:
@@ -96,7 +102,8 @@ export default function TransactionsPage({ accounts = [] }: createAccountProps) 
           <MenuItem value="check-transactions">Check Transactions</MenuItem>
           <MenuItem value="create-account">Create New Account</MenuItem>
           <MenuItem value="make-transfer">Make Transfer</MenuItem>
-          <MenuItem value="check-account-balance">Check account balance</MenuItem>
+          <MenuItem value="check-balance">Check Balance</MenuItem>
+          {/* <MenuItem value="check-details">Check Details</MenuItem> */}
           <MenuItem hidden value="default-view">Choose something</MenuItem>
         </Select>
       </FormControl>
