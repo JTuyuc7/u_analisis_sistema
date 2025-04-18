@@ -1,7 +1,19 @@
-name: Run TypeORM Migrations
+name: Run TypeORM Migrations for Preview
 
 on:
-  workflow_dispatch: # Makes this manually triggered
+  workflow_dispatch:
+    inputs:
+      migration_mode:
+        description: 'Migration Mode'
+        required: true
+        default: 'new'
+        type: choice
+        options:
+          - new
+          - complete
+  push:
+    branches:
+      - develop
 
 jobs:
   run-migrations:
@@ -13,9 +25,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: 🐘 Install PostgreSQL client
         run: |
@@ -30,32 +44,46 @@ jobs:
         working-directory: ./backend
         run: npm run build
 
-      - name: 🧱 Run TypeORM Migrations
+      - name: 🧱 Run Migrations
         working-directory: ./backend
         run: |
-          # First, try to drop all existing tables and functions
-          echo "Cleaning up existing database objects..."
-          npm run typeorm schema:drop -- -d src/data-source.ts
-          
-          # Then run the migration fresh
-          echo "Running migrations..."
-          npm run migration:run:prod
-          
-          if [ $? -eq 0 ]; then
-            echo "Migration completed successfully"
-          else
-            echo "Migration failed. Attempting to fix common issues..."
-            # Drop any existing triggers first
-            npm run typeorm query "DROP TRIGGER IF EXISTS enforce_card_limit ON card;"
-            npm run typeorm query "DROP TRIGGER IF EXISTS enforce_account_limit ON account;"
-            npm run typeorm query "DROP FUNCTION IF EXISTS check_card_limit;"
-            npm run typeorm query "DROP FUNCTION IF EXISTS check_account_limit;"
+          if [ "${{ github.event.inputs.migration_mode }}" == "complete" ]; then
+            echo "Running complete migration..."
+            # First, try to drop all existing tables and functions
+            echo "Cleaning up existing database objects..."
+            npm run typeorm schema:drop -- -d src/data-source.ts
             
-            # Try migration again
-            echo "Retrying migration..."
+            # Then run the migration fresh
+            echo "Running migrations..."
             npm run migration:run:prod
+            
+            if [ $? -eq 0 ]; then
+              echo "Migration completed successfully"
+            else
+              echo "Migration failed. Attempting to fix common issues..."
+              # Drop any existing triggers first
+              npm run typeorm query "DROP TRIGGER IF EXISTS enforce_card_limit ON card;"
+              npm run typeorm query "DROP TRIGGER IF EXISTS enforce_account_limit ON account;"
+              npm run typeorm query "DROP FUNCTION IF EXISTS check_card_limit;"
+              npm run typeorm query "DROP FUNCTION IF EXISTS check_account_limit;"
+              
+              # Try migration again
+              echo "Retrying migration..."
+              npm run migration:run:prod
+            fi
+          else
+            echo "Running new migrations..."
+            npm run migration:run
           fi
         env:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TYPEORM_LOGGING: true
+
+      - name: 📢 Migration Summary
+        run: |
+          if [ "${{ github.event.inputs.migration_mode }}" == "complete" ]; then
+            echo "Complete migration process finished"
+          else
+            echo "New migrations applied successfully"
+          fi
