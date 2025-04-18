@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Select, MenuItem, FormControl, InputLabel, Stack, SelectChangeEvent, Box } from '@mui/material'
 // import CreateAccount from './createAccount'
 import { IAccountDataProps } from '@/lib/interfaces'
@@ -19,21 +20,6 @@ interface ViewContentProps {
   onHandleCancelView: () => void
 }
 
-// Placeholder components for each action
-const CheckTransactions = () => (
-  <Box>
-    <h2 className="text-xl mb-4">Check Transactions</h2>
-    <FormControl fullWidth>
-      <InputLabel>Select Account/Card</InputLabel>
-      <Select defaultValue="">
-        <MenuItem value="account1">Account 1</MenuItem>
-        <MenuItem value="account2">Account 2</MenuItem>
-        <MenuItem value="card1">Card 1</MenuItem>
-      </Select>
-    </FormControl>
-  </Box>
-)
-
 const CreateNewAccount = ({ onHandleCancelView }: ViewContentProps) => (
   <RenderContent title="Create New Account">
     <CreateAccount onHandleCancelView={onHandleCancelView} />
@@ -41,7 +27,7 @@ const CreateNewAccount = ({ onHandleCancelView }: ViewContentProps) => (
 )
 
 const DefaultViewPage = () => (
-  <RenderContent title="Welcome to the Transactions Page">
+  <RenderContent title="Welcome to the Operations Page">
     <p className="text-lg">Please select an action from the dropdown above.</p>
   </RenderContent>
 )
@@ -59,9 +45,31 @@ const CheckBalance = ({onHandleCancelView}: ViewContentProps) => (
 )
 
 export default function TransactionsPage({ accounts = [] }: createAccountProps) {
-  const [selectedAction, setSelectedAction] = useState('')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const actionParam = searchParams.get('action')
+  
+  const [selectedAction, setSelectedAction] = useState(actionParam || '')
   const dispatch = useDispatch()
-  dispatch(setAccounts(accounts))
+  
+  // Set accounts in the store only once when component mounts or accounts change
+  useEffect(() => {
+    dispatch(setAccounts(accounts))
+  }, [accounts, dispatch])
+
+  // Update URL when selectedAction changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    
+    if (selectedAction) {
+      params.set('action', selectedAction)
+    } else {
+      params.delete('action')
+    }
+    
+    // Update the URL without refreshing the page
+    router.push(`?${params.toString()}`, { scroll: false })
+  }, [selectedAction, router, searchParams])
 
   const handleActionChange = (event: SelectChangeEvent) => {
     setSelectedAction(event.target.value as string)
@@ -73,8 +81,6 @@ export default function TransactionsPage({ accounts = [] }: createAccountProps) 
 
   const renderSelectedComponent = () => {
     switch (selectedAction) {
-      case 'check-transactions':
-        return <CheckTransactions />
       case 'create-account':
         return <CreateNewAccount onHandleCancelView={handleCancelView} />
       case 'make-transfer':
@@ -90,7 +96,7 @@ export default function TransactionsPage({ accounts = [] }: createAccountProps) 
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 'md', margin: '0 auto', width: '100%' }}>
-      <h1 className="text-3xl font-bold">Transactions</h1>
+      <h1 className="text-3xl font-bold">Operations</h1>
       <FormControl fullWidth>
         <InputLabel id="action-select-label">Select Action</InputLabel>
         <Select
@@ -99,7 +105,7 @@ export default function TransactionsPage({ accounts = [] }: createAccountProps) 
           onChange={handleActionChange}
           label="Select Action"
         >
-          <MenuItem value="check-transactions">Check Transactions</MenuItem>
+          {/* <MenuItem value="check-transactions">Check Transactions</MenuItem> */}
           <MenuItem value="create-account">Create New Account</MenuItem>
           <MenuItem value="make-transfer">Make Transfer</MenuItem>
           <MenuItem value="check-balance">Check Balance</MenuItem>
