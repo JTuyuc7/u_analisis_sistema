@@ -97,6 +97,7 @@ export interface ISingleAccountProps {
 export interface IRenderContent {
   title: string
   children: React.ReactNode
+  titleColor?: string
 }
 
 export interface AuthState {

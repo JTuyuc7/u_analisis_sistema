@@ -25,3 +25,10 @@ export function debounce<T extends (...args: string[]) => void>(func: T, delay: 
     timer = setTimeout(() => func(...args), delay)
   } as T
 }
+
+export function formatCardNumber(str: string): string {
+  return str
+    .replace(/\D/g, '')            // strip non‑digits
+    .replace(/(.{4})/g, '$1-')     // after every 4 chars, insert a hyphen
+    .slice(0, -1);                 // remove trailing hyphen
+}

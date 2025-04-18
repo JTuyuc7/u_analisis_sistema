@@ -367,5 +367,132 @@ export const getAccountBalanceByAccountNumber = async (req: Request, res: Respon
     console.error('Error retrieving account balance:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'Error retrieving account balance' });
   }
+};
 
+// Get card associated with an account number
+export const getCardByAccountNumber = async (req: Request, res: Response): Promise<void> => {
+  const accountNumber = req.params.accountNumber;
+  
+  try {
+    const result = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const cardRepository = transactionalEntityManager.getRepository(Card);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+
+      // First find the account
+      const account = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :accountNumber', { accountNumber })
+        .getOne();
+
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      // Check if the user is authorized to access this account
+      if (account.customer.customer_id !== req.user?.id) {
+        throw new Error('You are not authorized to perform this operation');
+      }
+
+      // Find the card associated with the account
+      const card = await cardRepository
+        .createQueryBuilder('card')
+        .where('card.account = :accountId', { accountId: account.account_id })
+        .getOne();
+
+      if (!card) {
+        throw new Error('No card found for this account');
+      }
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: account.customer,
+        operation: 'CARD_RETRIEVAL',
+        details: `Retrieved card information for account ${account.account_number}`
+      }));
+
+      // Return masked card details for security
+      return {
+        // card_number: card.card_number.replace(/\d(?=\d{4})/g, '*'), // Mask all but last 4 digits
+        card_number: card.card_number, // Mask all but last 4 digits
+        expiration_date: card.expiration_date,
+        status: card.status,
+        cvv: card.security_code,
+      };
+    });
+
+    res.json({ 
+      message: 'Card retrieved successfully', 
+      card: result 
+    });
+  } catch (error) {
+    console.error('Error retrieving card:', error);
+    res.status(error instanceof Error && error.message.includes('not authorized') ? 403 : 500)
+      .json({ message: error instanceof Error ? error.message : 'Error retrieving card information' });
+  }
+};
+
+export const getAllCardsAssociatedWithAccount = async (req: Request, res: Response): Promise<void> => {
+  const accountId = parseInt(req.params.accountId, 10);
+
+  try {
+    const cards = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const cardRepository = transactionalEntityManager.getRepository(Card);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+
+      // First verify the account exists and belongs to the user
+      const account = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_id = :accountId', { accountId })
+        .getOne();
+
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      // Check if the user is authorized to access this account
+      if (account.customer.customer_id !== req.user?.id) {
+        throw new Error('You are not authorized to perform this operation');
+      }
+
+      // Get cards associated with the account using query builder
+      const cards = await cardRepository
+        .createQueryBuilder('card')
+        .leftJoinAndSelect('card.account', 'account')
+        .where('account.account_id = :accountId', { accountId })
+        .getMany();
+
+      if (cards.length === 0) {
+        throw new Error('No cards found for this account');
+      }
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: account.customer,
+        operation: 'CARD_LISTING',
+        details: `Listed ${cards.length} cards for account ${account.account_number}`
+      }));
+
+      // Return masked card details for security
+      return cards.map(card => ({
+        card_id: card.card_id,
+        card_number: card.card_number.replace(/\d(?=\d{4})/g, '*'), // Mask all but last 4 digits
+        expiration_date: card.expiration_date,
+        status: card.status,
+        created_at: card.created_at
+      }));
+    });
+
+    res.json({ 
+      message: 'Cards retrieved successfully', 
+      cards 
+    });
+  } catch (error) {
+    console.error('Error retrieving cards:', error);
+    res.status(error instanceof Error && error.message.includes('not authorized') ? 403 : 500)
+      .json({ message: error instanceof Error ? error.message : 'Error retrieving cards' });
+  }
 };

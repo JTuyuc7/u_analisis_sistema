@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance, getAccountBalanceByAccountNumber } from '../controllers/accountController';
+import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance, getAccountBalanceByAccountNumber, getCardByAccountNumber } from '../controllers/accountController';
 import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -280,5 +280,33 @@ router.post('/change-balance', isAdmin, changeAccountBalance);
  */
 // Get account balance by account number
 router.get('/balance/:accountId', getAccountBalanceByAccountNumber);
+
+/**
+ * @swagger
+ * /api/accounts/card/{accountNumber}:
+ *   get:
+ *     summary: Get card details associated with an account number
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: accountNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Account Number
+ *     responses:
+ *       200:
+ *         description: Card details retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Not authorized to access this account
+ *       404:
+ *         description: No card found for this account
+ */
+// Get card details by account number
+router.get('/card/:accountNumber', getCardByAccountNumber);
 
 export default router;
