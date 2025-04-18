@@ -3,6 +3,7 @@
 import { ThemeProvider, createTheme } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import { useState, createContext, useContext, useMemo, ReactNode } from 'react'
+import { ToastContainer } from 'react-toastify'
 
 // Create a context for the theme
 const ThemeContext = createContext({
@@ -51,6 +52,18 @@ export default function ClientThemeProvider({ children }: { children: ReactNode 
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme={isDarkTheme ? 'dark' : 'light'}
+        />
       </ThemeProvider>
     </ThemeContext.Provider>
   )

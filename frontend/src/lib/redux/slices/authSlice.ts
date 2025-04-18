@@ -1,13 +1,7 @@
-import { AuthInterface } from '@/lib/interfaces/authInteface';
+
+import { AuthInterface, AuthState } from '@/lib/interfaces';
 import { cookies } from '@/lib/utils/cookies';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-
-export interface AuthState {
-  isAuthenticated: null | boolean;
-  user: AuthInterface;
-  token: string 
-}
 
 const { token, user } = cookies.get();
 

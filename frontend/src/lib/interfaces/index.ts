@@ -67,3 +67,77 @@ export interface createAccountState {
   },
   success?: boolean
 }
+
+export interface IAccountDataProps {
+  account_id: number;
+  account_name: string;
+  account_number: string;
+  account_type: string;
+  balance: number;
+  created_at: string;
+  status: string;
+}
+
+export interface IListAccountProps {
+  success: boolean
+  data: { 
+    accounts?: IAccountDataProps[]
+    msg: string
+  }
+}
+
+export interface ISingleAccountProps {
+  success: boolean
+  data: {
+    account?: IAccountDataProps
+    msg: string
+  }
+}
+
+export interface IRenderContent {
+  title: string
+  children: React.ReactNode
+}
+
+export interface AuthState {
+  isAuthenticated: null | boolean;
+  user: AuthInterface;
+  token: string 
+}
+
+export interface IAcccountState {
+  accounts: IAccountDataProps[],
+  loading: boolean,
+  error: string | null,
+  success: boolean,
+}
+
+export interface ISingleAccountFinderProps { 
+  account_number: string
+  account_type: string
+  customer_id: number
+  first_name: string
+  last_name: string
+}
+export interface IAccountFinderProps {
+  success: boolean
+  error: boolean
+  data: {
+    account: ISingleAccountFinderProps 
+    msg: string
+  }
+}
+export interface TransferFormData {
+  account: { account_id: string; account_number: string, availableAmount: string };
+  toAccountId: string;
+  amount: string;
+  description: string;
+  toAccountDetails: { accountId: string, toAccountName: string }
+}
+
+export interface FormErrors {
+  fromAccountId?: string;
+  toAccountId?: string;
+  amount?: string;
+  description?: string;
+}

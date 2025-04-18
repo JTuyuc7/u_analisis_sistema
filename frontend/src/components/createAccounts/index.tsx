@@ -11,8 +11,7 @@ import {
   Button,
   Box,
   FormHelperText,
-  Alert,
-  SelectChangeEvent
+  Alert
 } from '@mui/material'
 import { createAccountAction } from '@/app/actions'
 
@@ -98,7 +97,6 @@ export default function CreateAccount({ onHandleCancelView }: CreateAccountProps
           helperText={formState.errors?.accountName}
           value={localState.accountName}
           onChange={(e) => setLocalState({ ...localState, accountName: e.target.value })}
-
         />
 
         <TextField

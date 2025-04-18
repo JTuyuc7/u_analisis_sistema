@@ -122,6 +122,8 @@ const Sidebar = () => {
       {isMobile && (
         <AppBar
           position="fixed"
+          color='primary'
+          enableColorOnDark
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
             height: APPBAR_HEIGHT,
