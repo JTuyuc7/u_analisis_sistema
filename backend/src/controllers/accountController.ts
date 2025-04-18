@@ -149,6 +149,10 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
         .leftJoinAndSelect('account.customer', 'customer')
         .where('account.account_number = :id', { id: toAccountId })
         .getOne();
+      
+      if (fromAccount?.account_number === toAccount?.account_number) { 
+        throw new Error('Cannot transfer money to the same account');
+      }
 
       if (!fromAccount || !toAccount) {
         throw new Error('One or both accounts not found');
@@ -267,7 +271,7 @@ export const findValidAccount = async (req: Request, res: Response): Promise<voi
     res.json({ message: 'Account found', account: result?.accountDetails });
   } catch (error) {
     console.error('Error finding account:', error);
-    res.status(500).json({ message: 'Error finding account' });
+    res.status(404).json({ message: 'Account not found, please check the number' });
   }
 };
 
@@ -325,4 +329,43 @@ export const changeAccountBalance = async (req: Request, res: Response): Promise
     console.error('Error changing account balance:', error);
     res.status(500).json({ message: 'Error changing account balance' });
   }
+};
+
+export const getAccountBalanceByAccountNumber = async (req: Request, res: Response): Promise<void> => {
+  const accountId = req.params.accountId;
+  try {
+    const account = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const accountRepository = transactionalEntityManager.getRepository(Account);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+
+      const accountUser = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :id', { id: accountId })
+        .getOne();
+      
+
+      if (accountUser?.customer.customer_id !== req.user?.id) {
+        throw new Error('You are not authorized to perform this operation');
+      }
+
+      if (!accountUser) {
+        throw new Error('Account not found');
+      }
+
+      await auditLogRepository.save(auditLogRepository.create({
+        customer: accountUser.customer,
+        operation: 'ACCOUNT_BALANCE_CHECK',
+        details: `Checked balance for account ${accountUser.account_number}`
+      }));
+
+      return { balance: accountUser.balance };
+    });
+
+    res.json({ message: 'Account balance retrieved successfully', balance: account?.balance });
+  } catch (error) {
+    console.error('Error retrieving account balance:', error);
+    res.status(500).json({ message: error instanceof Error ? error.message : 'Error retrieving account balance' });
+  }
+
 };

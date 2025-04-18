@@ -10,3 +10,18 @@ export const generateFieldErrors = (errors: z.ZodIssue[]) => {
   });
   return fieldErrors;
 }
+
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-GT', {
+    style: 'currency',
+    currency: 'GTQ'
+  }).format(amount);
+};
+
+export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
+  let timer: ReturnType<typeof setTimeout>
+  return function (...args: any[]) {
+    clearTimeout(timer)
+    timer = setTimeout(() => func(...args), delay)
+  } as T
+}

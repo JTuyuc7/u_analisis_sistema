@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance } from '../controllers/accountController';
+import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance, getAccountBalanceByAccountNumber } from '../controllers/accountController';
 import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -256,5 +256,29 @@ router.get('/:accountId', findValidAccount);
  *         description: Account not found
  */
 router.post('/change-balance', isAdmin, changeAccountBalance);
+
+/**
+ * @swagger
+ * /api/accounts/balance/{accountId}:
+ *   get:
+ *     summary: Get account balance by account number
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Account ID
+ *     responses:
+ *       200:
+ *         description: Account balance retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+// Get account balance by account number
+router.get('/balance/:accountId', getAccountBalanceByAccountNumber);
 
 export default router;
