@@ -16,7 +16,7 @@ const LoadingScreen: React.FC = () => {
     >
       <CircularProgress size={60} thickness={4} />
       <Typography variant="h6" sx={{ mt: 2 }}>
-        Cargando...
+        Loading...
       </Typography>
     </Box>
   );

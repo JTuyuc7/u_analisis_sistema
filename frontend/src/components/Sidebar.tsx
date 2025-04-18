@@ -29,6 +29,7 @@ import {
   Menu as MenuIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  
 } from '@mui/icons-material'
 
 const DRAWER_WIDTH = 250
@@ -47,7 +48,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: HomeIcon, label: 'Home', path: '/dashboard/home' },
-    { icon: SwapHorizIcon, label: 'Transactions', path: '/dashboard/transactions' },
+    { icon: SwapHorizIcon, label: 'Operations', path: '/dashboard/operations' },
     { icon: HistoryIcon, label: 'History', path: '/dashboard/history' },
     { icon: PersonIcon, label: 'Profile', path: '/dashboard/profile' },
     { icon: SettingsIcon, label: 'Ajustes', path: '/dashboard/settings' },
