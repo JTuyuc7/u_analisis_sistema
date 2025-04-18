@@ -18,9 +18,9 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
+export function debounce<T extends (...args: string[]) => void>(func: T, delay: number): T {
   let timer: ReturnType<typeof setTimeout>
-  return function (...args: any[]) {
+  return function (...args: string[]) {
     clearTimeout(timer)
     timer = setTimeout(() => func(...args), delay)
   } as T
