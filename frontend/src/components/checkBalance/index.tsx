@@ -29,6 +29,7 @@ import { IAccountDataProps } from "@/lib/interfaces";
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import RenderContent from "../common/renderContent";
 
 interface CardDetails {
   card_number: string;
@@ -92,6 +93,19 @@ export default function CheckBalanceMainContent({ onHandleCancelView }: CheckBal
     }
   };
 
+  if (accounts.length === 0) {
+    return (
+      <RenderContent title="">
+        <Typography variant="h6" gutterBottom color="primary.main">
+          No accounts available
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Please create an account to check your balance.
+        </Typography>
+      </RenderContent>
+    )
+  }
+
   return (
     <Box sx={{ maxWidth: 'sm', width: '100%' }}>
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -109,9 +123,6 @@ export default function CheckBalanceMainContent({ onHandleCancelView }: CheckBal
             onChange={handleAccountChange}
             displayEmpty
             renderValue={(selected) => {
-              // if (!selected) {
-              //   return <Typography color="text.secondary">Select an account</Typography>;
-              // }
               const account = accounts.find(acc => acc.account_number === selected);
               return account ? `${account.account_name} (${account.account_type}) - ${account.account_number}` : "";
             }}
@@ -217,7 +228,6 @@ export default function CheckBalanceMainContent({ onHandleCancelView }: CheckBal
               </Box>
 
               <Typography variant="body1" sx={{ mb: 2, letterSpacing: 2, fontSize: '1.2rem' }}>
-                {/* {cardDetails.card_number} */}
                 {formatCardNumber(cardDetails.card_number)}
               </Typography>
 
@@ -230,7 +240,6 @@ export default function CheckBalanceMainContent({ onHandleCancelView }: CheckBal
                     {cardDetails.expiration_date}
                   </Typography>
                 </Box>
-
                 <Box>
                   <Typography variant="caption">
                     CVV

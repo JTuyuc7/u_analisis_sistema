@@ -26,9 +26,15 @@ const accountSlice = createSlice({
     },
     addAccount: (state, action: PayloadAction<IAccountDataProps>) => {
       state.accounts.push(action.payload)
+    },
+    logoutAccountAction: (state) => { 
+      state.accounts = []
+      state.loading = false
+      state.error = null
+      state.success = false
     }
   }
 })
 
-export const { setAccounts, setLoading, setError, setSuccess, addAccount } = accountSlice.actions
+export const { setAccounts, setLoading, setError, setSuccess, addAccount, logoutAccountAction } = accountSlice.actions
 export default accountSlice.reducer

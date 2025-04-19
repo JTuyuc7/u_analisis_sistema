@@ -138,6 +138,20 @@ export default function TransactionsMainPage({ transactions }: ITransactionsMain
     window.history.pushState({}, '', newUrlWithParams);
   };
 
+  if (transactions.length === 0) { 
+    return (
+      <RenderContent title="Transactions" titleColor="primary.main">
+        <Card sx={{ width: '100%', maxWidth: 1200, mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" color="textSecondary" align="center">
+              No transactions yet.
+            </Typography>
+          </CardContent>
+        </Card>
+      </RenderContent>
+    );
+  }
+
   return (
     <RenderContent title="Transactions" titleColor="primary.main">
       <Card sx={{ width: '100%', maxWidth: 1200, mb: 4 }}>
