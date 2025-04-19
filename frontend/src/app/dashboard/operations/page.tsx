@@ -1,7 +1,7 @@
 import { getAllUserAccount } from '@/app/actions'
-import TransactionsPage from '@/components/transactions'
+import OperationsMainPage from '@/components/operations'
 
-export default async function TransactionsMainPage() {
+export default async function OperationsPage() {
   const response = await getAllUserAccount()
-  return <TransactionsPage accounts={response.data.accounts} />
+  return <OperationsMainPage accounts={response.data.accounts} />
 }

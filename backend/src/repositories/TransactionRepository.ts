@@ -14,4 +14,21 @@ export class TransactionRepository extends Repository<Transaction> {
       order: { transaction_date: 'DESC' }
     });
   }
+
+  async getTransactionsByCustomerId(customerId: number): Promise<Transaction[]> {
+    return this.find({
+      where: { customer: { customer_id: customerId } },
+      order: { transaction_date: 'DESC' }
+    });
+  }
+
+  async getTransactionsByCustomerIdAndAccountId(customerId: number, accountId: number): Promise<Transaction[]> {
+    return this.find({
+      where: { 
+        customer: { customer_id: customerId },
+        account: { account_id: accountId }
+      },
+      order: { transaction_date: 'DESC' }
+    });
+  }
 }

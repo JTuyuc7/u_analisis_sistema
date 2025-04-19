@@ -16,7 +16,7 @@ export class AuditLog {
     @Column({ type: 'text', nullable: true })
       details: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamptz' })
       log_date: Date;
 
     static create(data: {

@@ -176,6 +176,7 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
       // Create transactions
       await transactionRepository.save(transactionRepository.create({
         account: fromAccount,
+        customer: fromAccount.customer,
         transaction_type: 'transfer',
         amount: -parsedAmount,
         description,
@@ -184,6 +185,7 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
 
       await transactionRepository.save(transactionRepository.create({
         account: toAccount,
+        customer: toAccount.customer,
         transaction_type: 'deposit',
         amount: parsedAmount,
         description,
@@ -206,21 +208,65 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
 };
 
 // List all transactions for a given account
-export const listTransactions = async (req: Request, res: Response): Promise<void> => {
-  const accountId = parseInt(req.params.accountId);
+export const listTransactionsByAccountNumber = async (req: Request, res: Response): Promise<void> => {
+  console.log(req.params.accountId, 'from listTransactionsByAccountNumber');
+  // Ensure accountId is a valid number
+  const accountId = req.params.accountId;
+  
+  if (!accountId) {
+    res.status(400).json({ message: 'Invalid account number format' });
+    return;
+  }
 
   try {
     const transactionList = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
       const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+      const accountRepository = transactionalEntityManager.getRepository(Account);
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
-      const transactions = await transactionRepository.find({
-        where: { account: { account_id: accountId } },
-        order: { transaction_date: 'DESC' },
-        relations: ['account']
-      });
+      
+      // First verify the account exists and belongs to the user
+      const account = await accountRepository
+        .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
+        .where('account.account_number = :accountId', { accountId })
+        .getOne();
+
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      // Check if the user is authorized to access this account
+      if (account.customer.customer_id !== req.user?.id) {
+        throw new Error('You are not authorized to view transactions for this account');
+      }
+      
+      // Get transactions by account ID with limited fields
+      const transactions = await transactionRepository
+        .createQueryBuilder('transaction')
+        .leftJoinAndSelect('transaction.account', 'account')
+        .leftJoinAndSelect('transaction.customer', 'customer')
+        .select([
+          'transaction.transaction_id',
+          'transaction.transaction_type',
+          'transaction.amount',
+          'transaction.description',
+          'transaction.related_account_id',
+          'transaction.transaction_date',
+          'account.account_id',
+          'account.account_number',
+          'account.account_type',
+          'account.account_name',
+          'account.status',
+          'customer.customer_id',
+          'customer.first_name',
+          'customer.last_name'
+        ])
+        .where('account.account_number = :accountId', { accountId })
+        .orderBy('transaction.transaction_date', 'DESC')
+        .getMany();
 
       await auditLogRepository.save(auditLogRepository.create({
-        customer: transactions[0].account.customer,
+        customer: account.customer,
         operation: 'TRANSACTION_LISTING',
         details: `Listed ${transactions.length} transactions for account ${accountId}`
       }));
@@ -231,7 +277,9 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
     res.json({ transactionList, msg: 'Listed transactions successfully' });
   } catch (error) {
     console.error('Error listing transactions:', error);
-    res.status(500).json({ message: 'Error retrieving transactions' });
+    const status = error instanceof Error && error.message.includes('not authorized') ? 403 : 500;
+    const message = error instanceof Error ? error.message : 'Error retrieving transactions';
+    res.status(status).json({ message });
   }
 };
 
@@ -296,6 +344,7 @@ export const changeAccountBalance = async (req: Request, res: Response): Promise
 
       const account = await accountRepository
         .createQueryBuilder('account')
+        .leftJoinAndSelect('account.customer', 'customer')
         .where('account.account_number = :id', { id: accountId })
         .getOne();
 
@@ -312,6 +361,7 @@ export const changeAccountBalance = async (req: Request, res: Response): Promise
       // Create a transaction record
       await transactionRepository.save(transactionRepository.create({
         account: account,
+        customer: account.customer,
         transaction_type: 'admin_balance_change from `' + oldBalance + ' to ' + newBalance,
         amount: Math.abs(newBalance),
         description: 'Admin balance adjustment',
@@ -433,6 +483,64 @@ export const getCardByAccountNumber = async (req: Request, res: Response): Promi
   }
 };
 
+// List all transactions for a customer
+export const listCustomerTransactions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const transactionList = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      const transactionRepository = transactionalEntityManager.getRepository(Transaction);
+      const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
+      const customerRepository = transactionalEntityManager.getRepository(Customer);
+      
+      // Get customer
+      const customer = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+      
+      // Get transactions by customer ID using query builder with limited fields
+      const transactions = await transactionRepository
+        .createQueryBuilder('transaction')
+        .leftJoinAndSelect('transaction.account', 'account')
+        .leftJoinAndSelect('transaction.customer', 'customer')
+        .select([
+          'transaction.transaction_id',
+          'transaction.transaction_type',
+          'transaction.amount',
+          'transaction.description',
+          'transaction.related_account_id',
+          'transaction.transaction_date',
+          'account.account_id',
+          'account.account_number',
+          'account.account_type',
+          'account.account_name',
+          'account.status',
+          'customer.customer_id',
+          'customer.first_name',
+          'customer.last_name'
+        ])
+        .where('transaction.customer_id = :customerId', { customerId: customer.customer_id })
+        .orderBy('transaction.transaction_date', 'DESC')
+        .getMany();
+      
+      console.log(`Found ${transactions.length} transactions for customer ${customer.customer_id}`);
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer,
+        operation: 'CUSTOMER_TRANSACTION_LISTING',
+        details: `Listed ${transactions.length} transactions for customer ${customer.customer_id}`
+      }));
+
+      return transactions || [];
+    });
+    console.log('Transaction list:', transactionList);
+    res.status(200).json({ transactionList, msg: 'Listed customer transactions successfully' });
+  } catch (error) {
+    console.error('Error listing customer transactions:', error);
+    res.status(500).json({ message: 'Error retrieving customer transactions' });
+  }
+};
+
 export const getAllCardsAssociatedWithAccount = async (req: Request, res: Response): Promise<void> => {
   const accountId = parseInt(req.params.accountId, 10);
 
@@ -488,7 +596,7 @@ export const getAllCardsAssociatedWithAccount = async (req: Request, res: Respon
 
     res.json({ 
       message: 'Cards retrieved successfully', 
-      cards 
+      cards:  cards || []
     });
   } catch (error) {
     console.error('Error retrieving cards:', error);

@@ -142,3 +142,40 @@ export interface FormErrors {
   amount?: string;
   description?: string;
 }
+
+export interface ITransactionStateResponse { 
+  success: boolean;
+  data: {
+    transactions: TransactionList[];
+    msg: string;
+  };
+}
+
+export interface TransactionList {
+  transaction_id: number;
+  transaction_type: TransactionType;
+  amount: string;
+  description?: string;
+  related_account_id: number;
+  transaction_date: Date;
+  account: Account;
+  customer: Customer;
+}
+
+export interface Account {
+  account_id: number;
+  account_number: string;
+  account_type: string | "checking" | "savings";
+  account_name: string;
+  status: string | "active" | "inactive";
+}
+export interface Customer {
+  customer_id: number;
+  first_name: string;
+  last_name: string;
+}
+
+export enum TransactionType {
+  Deposit = "deposit",
+  Transfer = "transfer",
+}

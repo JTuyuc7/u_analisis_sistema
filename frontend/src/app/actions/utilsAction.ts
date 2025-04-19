@@ -1,5 +1,5 @@
 'use server'
-import { IAccountFinderProps, IListAccountProps, ISingleAccountFinderProps } from "@/lib/interfaces";
+import { IAccountFinderProps, IListAccountProps, ISingleAccountFinderProps, ITransactionStateResponse } from "@/lib/interfaces";
 import axios from "axios";
 import { cookies } from "next/headers";
 
@@ -208,6 +208,128 @@ export async function getCardByAccountNumber(accountNumber: string) {
       data: {
         card: null,
         msg: "Error fetching card details",
+      },
+    };
+  }
+}
+
+export async function getAllUserTransactions(): Promise<ITransactionStateResponse> {
+  try {
+    const token = await getTokenFromCookie();
+    if (!token) {
+      return {
+        success: false,
+        data: { 
+          transactions: [],
+          msg: "No token found",
+        }
+      };
+    }
+
+    const response = await axios.get(`${backendURL}/accounts/customer/transactions`, {
+      headers: {
+        'Authorization': `${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // console.log("🚀 ~ getAllUserTransactions ~ response:", response.data)
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        data: {
+          transactions: [],
+          msg: "Error fetching user transactions",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        transactions: response.data.transactionList,
+        msg: response.data.msg
+      },
+    };
+  } catch (error : unknown) {
+    console.error("Error fetching user transactions:", error);
+    const errorMessage = error &&
+      typeof error === 'object' &&
+      'response' in error &&
+      error.response &&
+      typeof error.response === 'object' &&
+      'data' in error.response &&
+      error.response.data &&
+      typeof error.response.data === 'object' &&
+      'message' in error.response.data ?
+      error.response.data.message as string :
+      "An unexpected error occurred";
+    return {
+      success: false,
+      data: {
+        transactions: [],
+        msg: errorMessage,
+      },
+    };
+  }
+}
+
+export async function getTransactionByAccountNumber (accountNumber: string) { 
+  try {
+    const token = await getTokenFromCookie();
+    if (!token) {
+      return {
+        success: false,
+        data: {
+          transactions: [],
+          msg: "No token found",
+        }
+      };
+    }
+
+    const response = await axios.get(`${backendURL}/accounts/${accountNumber}/transactions`, {
+      headers: {
+        'Authorization': `${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        data: {
+          transactions: [],
+          msg: "Error fetching transactions",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        transactions: response.data.transactions,
+        msg: response.data.msg
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    const errorMessage = error &&
+      typeof error === 'object' &&
+      'response' in error &&
+      error.response &&
+      typeof error.response === 'object' &&
+      'data' in error.response &&
+      error.response.data &&
+      typeof error.response.data === 'object' &&
+      'message' in error.response.data ?
+      error.response.data.message as string :
+      "An unexpected error occurred";
+    return {
+      success: false,
+      data: {
+        transactions: [],
+        msg: errorMessage,
       },
     };
   }
