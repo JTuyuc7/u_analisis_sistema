@@ -2,7 +2,7 @@
 
 import React, { useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/lib/redux/store'
 import Link from 'next/link'
 import {
@@ -31,11 +31,14 @@ import {
   Logout as LogoutIcon,
   
 } from '@mui/icons-material'
+import { logout } from '@/lib/redux/slices/authSlice'
+import { logoutAccountAction } from '@/lib/redux/slices/accountSlice'
 
 const DRAWER_WIDTH = 250
 const APPBAR_HEIGHT = 64
 
 const Sidebar = () => {
+  const dispatch = useDispatch()
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
@@ -61,6 +64,13 @@ const Sidebar = () => {
       label: 'Admin',
       path: '/dashboard/admin'
     })
+  }
+
+  const logoutFunction = () => { 
+    router.push('/auth/login')
+    handleDrawerToggle()
+    dispatch(logout())
+    dispatch(logoutAccountAction())
   }
 
   const drawerContent = (
@@ -95,10 +105,7 @@ const Sidebar = () => {
         </Box>
         <Box>
           <ListItem
-            onClick={() => {
-              router.push('/auth/logout')
-              handleDrawerToggle()
-            }}
+            onClick={logoutFunction}
             sx={{
               '&:hover': {
                 bgcolor: 'action.hover',

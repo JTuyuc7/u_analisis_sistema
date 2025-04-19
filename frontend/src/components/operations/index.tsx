@@ -105,11 +105,9 @@ export default function OperationsMainPage({ accounts = [] }: createAccountProps
           onChange={handleActionChange}
           label="Select Action"
         >
-          {/* <MenuItem value="check-transactions">Check Transactions</MenuItem> */}
           <MenuItem value="create-account">Create New Account</MenuItem>
           <MenuItem value="make-transfer">Make Transfer</MenuItem>
           <MenuItem value="check-balance">Check Balance</MenuItem>
-          {/* <MenuItem value="check-details">Check Details</MenuItem> */}
           <MenuItem hidden value="default-view">Choose something</MenuItem>
         </Select>
       </FormControl>

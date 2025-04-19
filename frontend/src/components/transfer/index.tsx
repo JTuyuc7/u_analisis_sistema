@@ -23,6 +23,7 @@ import trasnferAction from "@/app/actions/transferAction";
 import { debounce } from "@/lib/utils/utils";
 import { getAccountByAccountNumber } from "@/app/actions";
 import { toast } from 'react-toastify';
+import RenderContent from "../common/renderContent";
 
 interface TransferPageProps {
   onHandleCancelView: () => void
@@ -168,11 +169,22 @@ export default function TransferPage({ onHandleCancelView }: TransferPageProps) 
     };
   }, [formState.success, formState.error, formState.state.msg]);
 
+  if (!accounts || accounts.length === 0) { 
+    return (
+      <RenderContent title="" titleColor="primary.main">
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Typography variant="body1" color="text.secondary">
+            You don't have any accounts to transfer money from. Please create an account first.
+          </Typography>
+        </Box>
+      </RenderContent>
+    )
+  }
+
   return (
     <Box
       component="form"
       onSubmit={handleSubmit}
-      // ref={formRef}
       sx={{ maxWidth: 'sm', width: '100%' }}
     >
       <RenderAccountList

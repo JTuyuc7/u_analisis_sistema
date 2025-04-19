@@ -41,7 +41,6 @@ export default function LoginPage() {
   }
   useEffect(() => {
     if (formState.success) {
-      console.log(formState.user)
       dispatch(setUser({ user: formState.user as AuthInterface, token: formState.token  }))
       router.push('/dashboard/home')
     }
