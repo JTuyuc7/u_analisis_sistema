@@ -8,6 +8,7 @@ import accountRoutes from './routes/accountRoutes';
 import profileRoutes from './routes/profileRoutes';
 import seedRoutes from './routes/seedRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import adminRoutes from './routes/adminRoutes';
 import testRoutes from './routes/testRoute';
 import { AppDataSource } from './data-source';
 import dotenv from 'dotenv';
@@ -51,6 +52,7 @@ initializeDb().then(() => {
   app.use('/api', profileRoutes);
   app.use('/api', seedRoutes);
   app.use('/api/payments', paymentRoutes);
+  app.use('/api/admin', adminRoutes);
   app.use('/api/test', testRoutes);
 
   // Swagger documentation

@@ -1,103 +1,349 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/redux/store'
-import { FaUsers, FaExchangeAlt, FaChartLine, FaCog } from 'react-icons/fa'
+import { getLastTransaction, getSystemStats, getRecentUsers } from '@/app/actions'
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Stack,
+  Avatar,
+  Chip,
+  CircularProgress,
+  Alert
+} from '@mui/material'
+import {
+  People as PeopleIcon,
+  SwapHoriz as SwapHorizIcon,
+  TrendingUp as TrendingUpIcon,
+  Settings as SettingsIcon,
+  Description as DescriptionIcon,
+  ManageAccounts as ManageAccountsIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  CreditCard as CreditCardIcon,
+  AccountBalance as AccountBalanceIcon
+} from '@mui/icons-material'
+import { formatDate } from '@/lib/utils/utils'
+
+interface AdminTransaction {
+  id: string;
+  date: string;
+  amount: string;
+  type: string;
+  customer: {
+    name: string;
+    email: string;
+    accountNumber: string;
+  };
+}
+
+interface AdminStats {
+  label: string;
+  value: string;
+  color: string;
+  icon: any;
+}
+
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  joinDate: string;
+}
 
 export default function AdminPage() {
   const router = useRouter()
   const { user } = useSelector((state: RootState) => state.auth)
+  const [lastTransaction, setLastTransaction] = useState<AdminTransaction>({
+    id: 'TX000000',
+    date: new Date().toISOString().split('T')[0],
+    amount: '$0.00',
+    type: 'unknown',
+    customer: {
+      name: 'Unknown User',
+      email: 'unknown@example.com',
+      accountNumber: '****0000'
+    }
+  })
+  const [stats, setStats] = useState<AdminStats[]>([])
+  const [recentUsers, setRecentUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Map icons to stats
+  const iconMap: Record<string, any> = {
+    'Total Users': PeopleIcon,
+    'Total Transactions': SwapHorizIcon,
+    'Active Accounts': SettingsIcon,
+    'Monthly Growth': TrendingUpIcon,
+    'System Status': SettingsIcon
+  }
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
+    if (!user?.admin) {
       router.push('/dashboard/home')
+      return
     }
+
+    const fetchAdminData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        // Fetch last transaction
+        const transactionResponse = await getLastTransaction()
+        if (transactionResponse.success) {
+          setLastTransaction(transactionResponse.data.transaction)
+        }
+
+        // Fetch system stats
+        const statsResponse = await getSystemStats()
+        if (statsResponse.success) {
+          // Add icons to stats
+          const statsWithIcons = statsResponse.data.stats.map(stat => ({
+            ...stat,
+            icon: iconMap[stat.label] || SettingsIcon
+          }))
+          setStats(statsWithIcons)
+        }
+
+        // Fetch recent users
+        const usersResponse = await getRecentUsers()
+        if (usersResponse.success) {
+          setRecentUsers(usersResponse.data.users)
+        }
+      } catch (err) {
+        console.error('Error fetching admin data:', err)
+        setError('Failed to load admin dashboard data. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAdminData()
   }, [user, router])
 
-  if (user?.role !== 'admin') {
+  if (!user?.admin) {
     return null
   }
 
-  const stats = [
-    { label: 'Total Users', value: '150', icon: FaUsers, color: 'bg-blue-500' },
-    { label: 'Total Transactions', value: '1,234', icon: FaExchangeAlt, color: 'bg-green-500' },
-    { label: 'Monthly Growth', value: '+12.5%', icon: FaChartLine, color: 'bg-purple-500' },
-    { label: 'System Status', value: 'Healthy', icon: FaCog, color: 'bg-yellow-500' },
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: 'auto', py: 3 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">Admin Dashboard</Typography>
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Unable to load dashboard data. Please try refreshing the page.
+          </Typography>
+        </Paper>
+      </Box>
+    )
+  }
+
+  // Fallback data if API calls fail
+  const fallbackStats = [
+    { label: 'Total Users', value: '0', icon: PeopleIcon, color: 'primary.main' },
+    { label: 'Total Transactions', value: '0', icon: SwapHorizIcon, color: 'success.main' },
+    { label: 'Monthly Growth', value: '0%', icon: TrendingUpIcon, color: 'secondary.main' },
+    { label: 'System Status', value: 'Unknown', icon: SettingsIcon, color: 'warning.main' },
   ]
 
-  const recentUsers = [
-    { id: '1', name: 'John Doe', email: 'john@example.com', joinDate: '2025-03-15' },
-    { id: '2', name: 'Jane Smith', email: 'jane@example.com', joinDate: '2025-03-14' },
-    { id: '3', name: 'Bob Johnson', email: 'bob@example.com', joinDate: '2025-03-13' },
-  ]
+  const displayStats = stats.length > 0 ? stats : fallbackStats
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', py: 3 }}>
+      <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+        Admin Dashboard
+      </Typography>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Grid container spacing={3} sx={{ mb: 3 }}>
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className={`${stat.color} p-3 rounded-full`}>
-                <stat.icon className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-              </div>
-            </div>
-          </div>
+          <Grid item xs={12} sm={6} md={3} key={stat.label}>
+            <Card>
+              <CardContent>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar sx={{ bgcolor: stat.color }}>
+                    <stat.icon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {stat.label}
+                    </Typography>
+                    <Typography variant="h6" fontWeight="bold">
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </div>
+      </Grid>
+
+      {/* Last Customer Transaction */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Last Customer Transaction
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Card variant="outlined">
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar sx={{ bgcolor: 'primary.main' }}>
+                    {lastTransaction.customer.name.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle1">
+                      {lastTransaction.customer.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {lastTransaction.customer.email}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Stack spacing={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    Transaction Details
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CreditCardIcon fontSize="small" color="primary" />
+                    <Typography variant="body2">
+                      Account: {lastTransaction.customer.accountNumber}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AccountBalanceIcon fontSize="small" color="primary" />
+                    <Typography variant="body2">
+                      Amount: {lastTransaction.amount}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+                  <Chip 
+                    label={lastTransaction.type.toUpperCase()} 
+                    color={lastTransaction.type === 'deposit' ? 'success' : 'primary'} 
+                    size="small" 
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    ID: {lastTransaction.id}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Date: {formatDate(lastTransaction.date)}
+                  </Typography>
+                </Stack>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Paper>
 
       {/* Recent Users */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Recent Users</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentUsers.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.joinDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button className="text-indigo-600 hover:text-indigo-900">View Details</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Recent Users
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Join Date</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {recentUsers.map((user) => {
+                console.log(user, 'user')
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{formatDate(user.joinDate)}</TableCell>
+                    <TableCell align="right">
+                      <Button size="small" color="primary">
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
       {/* Admin Actions */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-            Generate Reports
-          </button>
-          <button className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-            Manage Users
-          </button>
-          <button className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">
-            System Settings
-          </button>
-        </div>
-      </div>
-    </div>
+      {/** TODO: add later  */}
+      {/* <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Quick Actions
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Button 
+              variant="contained" 
+              fullWidth 
+              startIcon={<DescriptionIcon />}
+              color="primary"
+            >
+              Generate Reports
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button 
+              variant="contained" 
+              fullWidth 
+              startIcon={<ManageAccountsIcon />}
+              color="success"
+            >
+              Manage Users
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button 
+              variant="contained" 
+              fullWidth 
+              startIcon={<AdminPanelSettingsIcon />}
+              color="secondary"
+            >
+              System Settings
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper> */}
+    </Box>
   )
 }
