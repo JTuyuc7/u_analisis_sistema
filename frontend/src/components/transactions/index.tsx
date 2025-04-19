@@ -1,121 +1,294 @@
 'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Select, MenuItem, FormControl, InputLabel, Stack, SelectChangeEvent, Box } from '@mui/material'
-// import CreateAccount from './createAccount'
-import { IAccountDataProps } from '@/lib/interfaces'
-import RenderContent from '../common/renderContent'
-import { useDispatch } from 'react-redux'
-import { setAccounts } from '@/lib/redux/slices/accountSlice'
-import CreateAccount from '../createAccounts'
-import TransferPage from '../transfer'
-import CheckBalanceMainContent from '../checkBalance'
-
-interface createAccountProps {
-  accounts?: IAccountDataProps[]
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TablePagination,
+  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Grid,
+  Chip,
+  Card,
+  CardContent,
+  IconButton
+} from "@mui/material";
+import RenderContent from "../common/renderContent";
+import { TransactionList, TransactionType } from "@/lib/interfaces";
+import { formatCurrency, formatDate } from "@/lib/utils/utils";
+import { Close } from "@mui/icons-material";
+interface ITransactionsMainPageProps {
+  transactions: TransactionList[]
 }
 
-interface ViewContentProps {
-  onHandleCancelView: () => void
-}
+export default function TransactionsMainPage({ transactions }: ITransactionsMainPageProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathName = usePathname();
 
-const CreateNewAccount = ({ onHandleCancelView }: ViewContentProps) => (
-  <RenderContent title="Create New Account">
-    <CreateAccount onHandleCancelView={onHandleCancelView} />
-  </RenderContent>
-)
+  // Initialize state from URL query parameters
+  const initialPage = parseInt(searchParams.get('page') || '0');
+  const initialRowsPerPage = parseInt(searchParams.get('limit') || '10');
+  const initialTypeFilter = searchParams.get('type') || 'all';
+  const initialSearchQuery = searchParams.get('search') || '';
 
-const DefaultViewPage = () => (
-  <RenderContent title="Welcome to the Operations Page">
-    <p className="text-lg">Please select an action from the dropdown above.</p>
-  </RenderContent>
-)
+  // Pagination state
+  const [page, setPage] = useState(initialPage);
+  const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
 
-const MakeTransfer = ({ onHandleCancelView }: ViewContentProps) => (
-  <RenderContent title="Make Transfer">
-    <TransferPage onHandleCancelView={onHandleCancelView} />
-  </RenderContent>
-)
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState<string>(initialTypeFilter);
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [skipUrlUpdate, setSkipUrlUpdate] = useState<Boolean>(false);
 
-const CheckBalance = ({onHandleCancelView}: ViewContentProps) => (
-  <RenderContent title="Check Balance" titleColor="primary.main">
-    <CheckBalanceMainContent onHandleCancelView={onHandleCancelView} />
-  </RenderContent>
-)
-
-export default function TransactionsPage({ accounts = [] }: createAccountProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const actionParam = searchParams.get('action')
-  
-  const [selectedAction, setSelectedAction] = useState(actionParam || '')
-  const dispatch = useDispatch()
-  
-  // Set accounts in the store only once when component mounts or accounts change
+  // Update URL when filters change
   useEffect(() => {
-    dispatch(setAccounts(accounts))
-  }, [accounts, dispatch])
-
-  // Update URL when selectedAction changes
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
-    
-    if (selectedAction) {
-      params.set('action', selectedAction)
-    } else {
-      params.delete('action')
+    if (skipUrlUpdate) {
+      setSkipUrlUpdate(false); // reset flag after skipping
+      return;
     }
-    
-    // Update the URL without refreshing the page
-    router.push(`?${params.toString()}`, { scroll: false })
-  }, [selectedAction, router, searchParams])
 
-  const handleActionChange = (event: SelectChangeEvent) => {
-    setSelectedAction(event.target.value as string)
-  }
+    const params = new URLSearchParams();
+    if (page > 0) params.set('page', page.toString());
+    if (rowsPerPage !== 10) params.set('limit', rowsPerPage.toString());
+    if (typeFilter !== 'all') params.set('type', typeFilter);
+    if (searchQuery) params.set('search', searchQuery);
 
-  const handleCancelView = () => {
-    setSelectedAction('default-view')
-  }
+    const queryString = params.toString();
+    const url = queryString ? `?${queryString}` : '';
+    router.replace(url, { scroll: false });
+  }, [page, rowsPerPage, typeFilter, searchQuery, skipUrlUpdate, router]);
 
-  const renderSelectedComponent = () => {
-    switch (selectedAction) {
-      case 'create-account':
-        return <CreateNewAccount onHandleCancelView={handleCancelView} />
-      case 'make-transfer':
-        return <MakeTransfer onHandleCancelView={handleCancelView} />
-      case 'check-balance':
-        return <CheckBalance onHandleCancelView={handleCancelView} />
-      case 'default-view':
-        return <DefaultViewPage />
+  // Handle pagination changes
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Filter transactions based on selected filters
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+      // Filter by transaction type
+      if (typeFilter !== 'all' && transaction.transaction_type !== typeFilter) {
+        return false;
+      }
+
+      // Search by description, amount, account number, or customer name
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const descriptionMatch = transaction.description?.toLowerCase().includes(searchLower);
+        const amountMatch = transaction.amount.toLowerCase().includes(searchLower);
+        const accountMatch = transaction.account.account_number.toLowerCase().includes(searchLower);
+        const customerMatch = `${transaction.customer.first_name} ${transaction.customer.last_name}`.toLowerCase().includes(searchLower);
+
+        return descriptionMatch || amountMatch || accountMatch || customerMatch;
+      }
+
+      return true;
+    });
+  }, [transactions, typeFilter, searchQuery]);
+
+  // Get current page transactions
+  const currentTransactions = useMemo(() => {
+    return filteredTransactions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [filteredTransactions, page, rowsPerPage]);
+
+  
+  // Get transaction type chip color
+  const getTransactionTypeColor = (type: string) => {
+    switch (type) {
+      case TransactionType.Deposit:
+        return 'success';
+      case TransactionType.Transfer:
+        return 'primary';
       default:
-        return <DefaultViewPage />
+        return 'default';
     }
-  }
+  };
+
+  const handleResetFilters = (clearType: string) => {
+    setSkipUrlUpdate(true);
+
+    if (clearType === 'search') { 
+      setSearchQuery('');
+    } else {
+      setTypeFilter('all');
+    }
+
+    const newUrl = pathName; 
+    const params = new URLSearchParams(window.location.search);
+    params.delete(clearType);
+    const queryParams = params.toString();
+    const newUrlParamsString = queryParams.toString() ? `?${queryParams}` : '';
+    const newUrlWithParams = `${newUrl}${newUrlParamsString}`;
+    window.history.pushState({}, '', newUrlWithParams);
+  };
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 'md', margin: '0 auto', width: '100%' }}>
-      <h1 className="text-3xl font-bold">Operations</h1>
-      <FormControl fullWidth>
-        <InputLabel id="action-select-label">Select Action</InputLabel>
-        <Select
-          labelId="action-select-label"
-          value={selectedAction}
-          onChange={handleActionChange}
-          label="Select Action"
-        >
-          {/* <MenuItem value="check-transactions">Check Transactions</MenuItem> */}
-          <MenuItem value="create-account">Create New Account</MenuItem>
-          <MenuItem value="make-transfer">Make Transfer</MenuItem>
-          <MenuItem value="check-balance">Check Balance</MenuItem>
-          {/* <MenuItem value="check-details">Check Details</MenuItem> */}
-          <MenuItem hidden value="default-view">Choose something</MenuItem>
-        </Select>
-      </FormControl>
-      <Box sx={{ width: '100%', paddingTop: 5 }}>
-        {renderSelectedComponent()}
-      </Box>
-    </Stack>
-  )
+    <RenderContent title="Transactions" titleColor="primary.main">
+      <Card sx={{ width: '100%', maxWidth: 1200, mb: 4 }}>
+        <CardContent>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Search transactions"
+                variant="outlined"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(0); // Reset to first page when searching
+                }}
+                placeholder="Search by description, amount, account, customer..."
+                size="small"
+                InputProps={{
+                  endAdornment: (
+                    <>
+                      {
+                        searchQuery.length > 0 && (
+                          <>
+                            <Box sx={{ display: 'flex', alignContent: 'center' }}>
+                              <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
+                                {filteredTransactions.length}
+                              </Typography>
+                              <Typography variant="caption" sx={{ mr: 1 }}> Results</Typography>
+                            </Box>
+                            <Box>
+                              <IconButton
+                                onClick={() => handleResetFilters('search')}
+                              >
+                                <Close color="error" />
+                              </IconButton>
+                            </Box>
+                          </>
+                        )
+                      }
+                    </>
+                  )
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="transaction-type-label">Transaction Type</InputLabel>
+                <Select
+                  labelId="transaction-type-label"
+                  value={typeFilter}
+                  label="Transaction Type"
+                  onChange={(e) => {
+                    setTypeFilter(e.target.value as string);
+                    setPage(0); // Reset to first page when changing filter
+                  }}
+                  //* TODO: find if this is useful to keep it
+                  endAdornment={
+                    typeFilter !== 'all' ? (
+                      <IconButton 
+                        size="small" 
+                        sx={{ mr: 2 }}
+                        onClick={ () => handleResetFilters('type') }
+                      >
+                        <Close fontSize="small" color="error" />
+                      </IconButton>
+                    ) : null
+                  }
+                >
+                  <MenuItem value="all">All Types</MenuItem>
+                  <MenuItem value={TransactionType.Deposit}>Deposit</MenuItem>
+                  <MenuItem value={TransactionType.Transfer}>Transfer</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Showing {filteredTransactions.length} transactions
+          </Typography>
+
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="transactions table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Account</TableCell>
+                  <TableCell>Customer</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {currentTransactions.length > 0 ? (
+                  currentTransactions.map((transaction) => (
+                    <TableRow key={transaction.transaction_id}>
+                      <TableCell>{transaction.transaction_id}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={transaction.transaction_type}
+                          color={getTransactionTypeColor(transaction.transaction_type) as "success" | "primary" | "default"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell sx={{
+                        color: transaction.transaction_type === TransactionType.Deposit
+                          ? 'success.main'
+                          : transaction.transaction_type === TransactionType.Transfer
+                            ? 'error.main'
+                            : 'inherit'
+                      }}>
+                        {formatCurrency(parseFloat(transaction.amount))}
+                      </TableCell>
+                      <TableCell>{transaction.description || '-'}</TableCell>
+                      <TableCell>{formatDate(transaction.transaction_date)}</TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {transaction.account.account_number}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {transaction.account.account_type}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {transaction.customer.first_name} {transaction.customer.last_name}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      No transactions found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredTransactions.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </CardContent>
+      </Card>
+    </RenderContent>
+  );
 }

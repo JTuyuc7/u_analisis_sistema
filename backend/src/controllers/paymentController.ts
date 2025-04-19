@@ -68,6 +68,7 @@ export const processCardPayment = async (req: Request, res: Response): Promise<v
       const transactionRepository = transactionalEntityManager.getRepository(Transaction);
       await transactionRepository.save(transactionRepository.create({
         account: account,
+        customer: account.customer,
         transaction_type: 'card_payment',
         amount: -parsedAmount,
         description: `Card payment using card ending in ${card_number.slice(-4)}`,
@@ -143,6 +144,7 @@ export const processAccountPayment = async (req: Request, res: Response): Promis
       const transactionRepository = transactionalEntityManager.getRepository(Transaction);
       await transactionRepository.save(transactionRepository.create({
         account: account,
+        customer: account.customer,
         transaction_type: 'account_payment',
         amount: -parsedAmount,
         description: `Account payment from ${account_number}`,

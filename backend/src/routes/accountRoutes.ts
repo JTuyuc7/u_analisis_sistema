@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAccount, listAccounts, transferMoney, listTransactions, findValidAccount, changeAccountBalance, getAccountBalanceByAccountNumber, getCardByAccountNumber } from '../controllers/accountController';
+import { createAccount, listAccounts, transferMoney, listTransactionsByAccountNumber, findValidAccount, changeAccountBalance, getAccountBalanceByAccountNumber, getCardByAccountNumber, listCustomerTransactions } from '../controllers/accountController';
 import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -47,11 +47,33 @@ const router = Router();
  *           description: Transaction amount
  *         transaction_type:
  *           type: string
- *           enum: [transfer, deposit, withdrawal]
+ *           enum: [transfer, deposit, withdrawal, card_payment, account_payment, admin_balance_change]
  *           description: Type of transaction
  *         description:
  *           type: string
  *           description: Transaction description
+ *         customer:
+ *           type: object
+ *           properties:
+ *             customer_id:
+ *               type: integer
+ *               description: ID of the customer who made the transaction
+ *         account:
+ *           type: object
+ *           properties:
+ *             account_id:
+ *               type: integer
+ *               description: ID of the account associated with the transaction
+ *             account_number:
+ *               type: string
+ *               description: Account number associated with the transaction
+ *         related_account_id:
+ *           type: integer
+ *           description: For transfers, the ID of the other account involved
+ *         transaction_date:
+ *           type: string
+ *           format: date-time
+ *           description: Date and time when the transaction occurred
  */
 
 /**
@@ -174,8 +196,31 @@ const router = Router();
  *                 $ref: '#/components/schemas/Transaction'
  *       401:
  *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Not authorized to view transactions for this account
  *       404:
  *         description: Account not found
+ */
+
+/**
+ * @swagger
+ * /api/accounts/customer/transactions:
+ *   get:
+ *     summary: List all transactions for the authenticated customer
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all customer transactions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Transaction'
+ *       401:
+ *         description: Unauthorized
  */
 
 /**
@@ -214,8 +259,11 @@ router.get('/customer/list', listAccounts);
 // Transfer money between accounts
 router.post('/transfer', transferMoney);
 
+// List all transactions for the authenticated customer
+router.get('/customer/transactions', listCustomerTransactions);
+
 // List all transactions for a given account
-router.get('/:accountId/transactions', listTransactions);
+router.get('/:accountId/transactions', listTransactionsByAccountNumber);
 
 // Find if an account exists
 router.get('/:accountId', findValidAccount);

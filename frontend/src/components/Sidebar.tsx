@@ -49,7 +49,7 @@ const Sidebar = () => {
   const menuItems = [
     { icon: HomeIcon, label: 'Home', path: '/dashboard/home' },
     { icon: SwapHorizIcon, label: 'Operations', path: '/dashboard/operations' },
-    { icon: HistoryIcon, label: 'History', path: '/dashboard/history' },
+    { icon: HistoryIcon, label: 'Transactions', path: '/dashboard/transactions' },
     { icon: PersonIcon, label: 'Profile', path: '/dashboard/profile' },
     { icon: SettingsIcon, label: 'Ajustes', path: '/dashboard/settings' },
     // { icon: LogoutIcon, label: 'Logout', path: '/auth/logout' },
