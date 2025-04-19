@@ -54,7 +54,7 @@ const Sidebar = () => {
     { icon: SwapHorizIcon, label: 'Operations', path: '/dashboard/operations' },
     { icon: HistoryIcon, label: 'Transactions', path: '/dashboard/transactions' },
     { icon: PersonIcon, label: 'Profile', path: '/dashboard/profile' },
-    { icon: SettingsIcon, label: 'Ajustes', path: '/dashboard/settings' },
+    { icon: SettingsIcon, label: 'Settings', path: '/dashboard/settings' },
     // { icon: LogoutIcon, label: 'Logout', path: '/auth/logout' },
   ]
 
@@ -77,7 +77,7 @@ const Sidebar = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', borderRight: '1px solid', borderColor: 'divider' }}>
       <Box sx={{ p: 3, height: APPBAR_HEIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Typography variant="h5" component="h1" align="center">
-          Dashboard
+          Banca - GT
         </Typography>
       </Box>
       <List sx={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

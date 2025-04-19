@@ -1,89 +1,116 @@
 'use client'
 
-import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/redux/store'
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  TextField,
+  Divider,
+  Avatar,
+  Stack
+} from '@mui/material'
+import {
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Badge as BadgeIcon
+} from '@mui/icons-material'
 
 export default function ProfilePage() {
   const { user } = useSelector((state: RootState) => state.auth)
-  const [isEditing, setIsEditing] = useState(false)
-  const [name, setName] = useState(user?.name || '')
-  const [email, setEmail] = useState(user?.email || '')
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implement profile update logic
-    setIsEditing(false)
-  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Profile</h1>
-      <div className="bg-white shadow rounded-lg p-6">
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={!isEditing}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={!isEditing}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
-              <input
-                type="text"
-                id="role"
-                value={user?.role || ''}
-                disabled
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
-              />
-            </div>
-          </div>
-          <div className="mt-6 flex items-center justify-end space-x-4">
-            {isEditing ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Save Changes
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', py: 3 }}>
+      <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+        Profile
+      </Typography>
+
+      <Paper sx={{ p: 3, mt: 3 }}>
+        <Grid container spacing={3}>
+          {/* Profile Avatar */}
+          <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Avatar
+              sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: 'primary.main',
+                fontSize: '3rem',
+                mb: 2
+              }}
+            >
+              {user?.first_name?.charAt(0) || 'U'}
+            </Avatar>
+            <Typography variant="h6" gutterBottom>
+              {user?.first_name} {user?.last_name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {user?.admin ? 'Administrator' : 'Customer'}
+            </Typography>
+          </Grid>
+
+          {/* Profile Information */}
+          <Grid item xs={12} md={8}>
+            <Typography variant="h6" gutterBottom>
+              Personal Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            
+            <Stack spacing={3}>
+              {/* Name */}
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <PersonIcon color="primary" />
+                  <Typography variant="subtitle1">Name</Typography>
+                </Stack>
+                <TextField
+                  fullWidth
+                  value={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="outlined"
+                />
+              </Box>
+              
+              {/* Email */}
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <EmailIcon color="primary" />
+                  <Typography variant="subtitle1">Email</Typography>
+                </Stack>
+                <TextField
+                  fullWidth
+                  value={user?.email || ''}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="outlined"
+                />
+              </Box>
+              
+              {/* Role */}
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <BadgeIcon color="primary" />
+                  <Typography variant="subtitle1">Role</Typography>
+                </Stack>
+                <TextField
+                  fullWidth
+                  value={user?.admin ? 'Administrator' : 'Customer'}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="outlined"
+                />
+              </Box>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
   )
 }
