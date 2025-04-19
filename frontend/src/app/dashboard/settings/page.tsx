@@ -10,40 +10,37 @@ import {
   Grid,
   Card,
   CardContent,
-  CardHeader,
+  Divider,
   FormControl,
+  FormLabel,
+  RadioGroup,
   FormControlLabel,
   Radio,
-  RadioGroup,
-  Button,
-  Divider,
-  Stack
+  Stack,
+  Switch,
+  useTheme
 } from '@mui/material'
 import {
   Language as LanguageIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
-  Save as SaveIcon
+  Translate as TranslateIcon
 } from '@mui/icons-material'
 
 export default function SettingsPage() {
   const { user } = useSelector((state: RootState) => state.auth)
   const [language, setLanguage] = useState('english')
   const [theme, setTheme] = useState('light')
+  const currentTheme = useTheme()
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLanguage(event.target.value)
-    // TODO: Implement language change logic
+    // In a real app, you would dispatch an action to update the language in your state management
   }
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTheme(event.target.value)
-    // TODO: Implement theme change logic
-  }
-
-  const handleSaveSettings = () => {
-    // TODO: Implement save settings logic
-    console.log('Settings saved:', { language, theme })
+    // In a real app, you would dispatch an action to update the theme in your state management
   }
 
   return (
@@ -51,164 +48,149 @@ export default function SettingsPage() {
       <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
         Settings
       </Typography>
+      <Typography variant="body1" sx={{ mb: 4 }}>
+        Customize your application preferences.
+      </Typography>
 
-      <Paper sx={{ p: 3, mt: 3 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Preferences
-        </Typography>
-        
-        <Divider sx={{ my: 2 }} />
-        
-        {/* Language Settings */}
-        <Box sx={{ mb: 4 }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            <LanguageIcon />
-            <Typography variant="h6">Language</Typography>
-          </Stack>
-          
-          <FormControl component="fieldset">
-            <RadioGroup
-              name="language"
-              value={language}
-              onChange={handleLanguageChange}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Card 
-                    variant="outlined"
-                    sx={{ 
-                      border: language === 'english' ? 2 : 1,
-                      borderColor: language === 'english' ? 'primary.main' : 'divider',
-                      bgcolor: language === 'english' ? 'action.hover' : 'background.paper'
-                    }}
-                  >
-                    <CardContent>
-                      <FormControlLabel 
-                        value="english" 
-                        control={<Radio />} 
-                        label={
-                          <Box>
-                            <Typography variant="subtitle1">English</Typography>
-                            <Typography variant="body2" color="text.secondary">English (United States)</Typography>
-                          </Box>
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Card 
-                    variant="outlined"
-                    sx={{ 
-                      border: language === 'spanish' ? 2 : 1,
-                      borderColor: language === 'spanish' ? 'primary.main' : 'divider',
-                      bgcolor: language === 'spanish' ? 'action.hover' : 'background.paper'
-                    }}
-                  >
-                    <CardContent>
-                      <FormControlLabel 
-                        value="spanish" 
-                        control={<Radio />} 
-                        label={
-                          <Box>
-                            <Typography variant="subtitle1">Español</Typography>
-                            <Typography variant="body2" color="text.secondary">Spanish (Latin America)</Typography>
-                          </Box>
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
+      {/* Language Settings */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          <LanguageIcon color="primary" fontSize="large" />
+          <Typography variant="h6">Language Settings</Typography>
+        </Stack>
+        <Divider sx={{ mb: 3 }} />
+
+        <FormControl component="fieldset">
+          <FormLabel component="legend" sx={{ mb: 2 }}>Select your preferred language</FormLabel>
+          <RadioGroup
+            name="language-options"
+            value={language}
+            onChange={handleLanguageChange}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 1, 
+                    border: language === 'english' ? 2 : 1,
+                    borderColor: language === 'english' ? 'primary.main' : 'divider'
+                  }}
+                >
+                  <CardContent>
+                    <FormControlLabel 
+                      value="english" 
+                      control={<Radio />} 
+                      label={
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <LanguageIcon color="primary" />
+                          <Typography>English</Typography>
+                        </Stack>
+                      } 
+                    />
+                  </CardContent>
+                </Card>
               </Grid>
-            </RadioGroup>
-          </FormControl>
-        </Box>
-        
-        <Divider sx={{ my: 2 }} />
-        
-        {/* Theme Settings */}
-        <Box sx={{ mb: 4 }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            {theme === 'light' ? <LightModeIcon /> : <DarkModeIcon />}
-            <Typography variant="h6">Theme</Typography>
-          </Stack>
-          
-          <FormControl component="fieldset">
-            <RadioGroup
-              name="theme"
-              value={theme}
-              onChange={handleThemeChange}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Card 
-                    variant="outlined"
-                    sx={{ 
-                      border: theme === 'light' ? 2 : 1,
-                      borderColor: theme === 'light' ? 'primary.main' : 'divider',
-                      bgcolor: theme === 'light' ? 'action.hover' : 'background.paper'
-                    }}
-                  >
-                    <CardContent>
-                      <FormControlLabel 
-                        value="light" 
-                        control={<Radio />} 
-                        label={
-                          <Stack direction="row" spacing={2} alignItems="center">
-                            <LightModeIcon sx={{ color: 'warning.main' }} />
-                            <Box>
-                              <Typography variant="subtitle1">Light</Typography>
-                              <Typography variant="body2" color="text.secondary">Default light theme</Typography>
-                            </Box>
-                          </Stack>
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Card 
-                    variant="outlined"
-                    sx={{ 
-                      border: theme === 'dark' ? 2 : 1,
-                      borderColor: theme === 'dark' ? 'primary.main' : 'divider',
-                      bgcolor: theme === 'dark' ? 'action.hover' : 'background.paper'
-                    }}
-                  >
-                    <CardContent>
-                      <FormControlLabel 
-                        value="dark" 
-                        control={<Radio />} 
-                        label={
-                          <Stack direction="row" spacing={2} alignItems="center">
-                            <DarkModeIcon sx={{ color: 'primary.dark' }} />
-                            <Box>
-                              <Typography variant="subtitle1">Dark</Typography>
-                              <Typography variant="body2" color="text.secondary">Dark mode for low light</Typography>
-                            </Box>
-                          </Stack>
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
+              <Grid item xs={12} sm={6}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 1, 
+                    border: language === 'spanish' ? 2 : 1,
+                    borderColor: language === 'spanish' ? 'primary.main' : 'divider'
+                  }}
+                >
+                  <CardContent>
+                    <FormControlLabel 
+                      value="spanish" 
+                      control={<Radio />} 
+                      label={
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <TranslateIcon color="primary" />
+                          <Typography>Spanish</Typography>
+                        </Stack>
+                      } 
+                    />
+                  </CardContent>
+                </Card>
               </Grid>
-            </RadioGroup>
-          </FormControl>
-        </Box>
+            </Grid>
+          </RadioGroup>
+        </FormControl>
       </Paper>
-      
-      {/* Save Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<SaveIcon />}
-          onClick={handleSaveSettings}
-        >
-          Save Preferences
-        </Button>
-      </Box>
+
+      {/* Theme Settings */}
+      <Paper sx={{ p: 3 }}>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          {theme === 'dark' ? 
+            <DarkModeIcon color="primary" fontSize="large" /> : 
+            <LightModeIcon color="primary" fontSize="large" />
+          }
+          <Typography variant="h6">Theme Settings</Typography>
+        </Stack>
+        <Divider sx={{ mb: 3 }} />
+
+        <FormControl component="fieldset">
+          <FormLabel component="legend" sx={{ mb: 2 }}>Select your preferred theme</FormLabel>
+          <RadioGroup
+            name="theme-options"
+            value={theme}
+            onChange={handleThemeChange}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 1, 
+                    border: theme === 'light' ? 2 : 1,
+                    borderColor: theme === 'light' ? 'primary.main' : 'divider',
+                    bgcolor: 'background.paper'
+                  }}
+                >
+                  <CardContent>
+                    <FormControlLabel 
+                      value="light" 
+                      control={<Radio />} 
+                      label={
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <LightModeIcon />
+                          <Typography>Light Theme</Typography>
+                        </Stack>
+                      } 
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 1, 
+                    border: theme === 'dark' ? 2 : 1,
+                    borderColor: theme === 'dark' ? 'primary.main' : 'divider',
+                    bgcolor: 'grey.900',
+                    color: 'white'
+                  }}
+                >
+                  <CardContent>
+                    <FormControlLabel 
+                      value="dark" 
+                      control={<Radio sx={{ color: 'white', '&.Mui-checked': { color: 'primary.light' } }} />} 
+                      label={
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <DarkModeIcon sx={{ color: 'white' }} />
+                          <Typography sx={{ color: 'white' }}>Dark Theme</Typography>
+                        </Stack>
+                      } 
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </RadioGroup>
+        </FormControl>
+      </Paper>
     </Box>
   )
 }
