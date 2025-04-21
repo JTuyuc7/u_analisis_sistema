@@ -45,7 +45,8 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
       account_type: accountType,
       account_name: accountName,
       security_pin: hashedSecurityPin,
-      balance: 0
+      balance: 500, // Default balance
+      // balance: 0 // TODO: check which is appropriate
     });
 
     // Save account, create default card and audit log
