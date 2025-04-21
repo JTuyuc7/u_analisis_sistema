@@ -89,6 +89,7 @@ export default function TransferPage({ onHandleCancelView }: TransferPageProps) 
     });
   };
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedFetch = useCallback(
     debounce((value: string) => {
       latestAccount.current = value
