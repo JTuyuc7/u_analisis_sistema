@@ -65,7 +65,6 @@ export const getCustomerById = async (req: Request, res: Response): Promise<void
 
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log(req.body.admin, 'req.body.admin');
     const customerRepository = AppDataSource.getRepository(Customer);
     
     // Check if email already exists
@@ -208,7 +207,6 @@ export const setAdminStatus = async (req: Request, res: Response): Promise<void>
     const customer = await customerRepository.findOne({ 
       where: { email } 
     });
-    console.log('🚀 ~ setAdminStatus ~ customer:', customer);
 
     if (!customer) {
       res.status(404).json({ message: 'Customer not found' });

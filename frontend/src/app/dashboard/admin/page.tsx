@@ -282,7 +282,6 @@ export default function AdminPage() {
             </TableHead>
             <TableBody>
               {recentUsers.map((user) => {
-                console.log(user, 'user')
                 return (
                   <TableRow key={user.id}>
                     <TableCell>{user.name}</TableCell>

@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 
 // Enable CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*', // your frontend URL
+  origin: process.env.FRONTEND_URL, // your frontend URL
   credentials: true, // to allow credentials
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

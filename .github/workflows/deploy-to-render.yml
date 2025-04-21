@@ -17,7 +17,6 @@ jobs:
   backend-lint:
     name: Backend ESLint
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.files.*.path, 'backend/') || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'backend/'))
     defaults:
       run:
         working-directory: backend
@@ -44,7 +43,6 @@ jobs:
   frontend-lint:
     name: Frontend ESLint
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.files.*.path, 'frontend/') || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'frontend/'))
     defaults:
       run:
         working-directory: frontend
@@ -106,7 +104,7 @@ jobs:
   deploy-backend-render:
     name: Deploy Backend to Render
     needs: [backend-lint]
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && contains(github.event.head_commit.modified, 'backend/'))
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: preview
     steps:
@@ -134,7 +132,7 @@ jobs:
   deploy-frontend-render:
     name: Deploy Frontend to Render
     needs: [frontend-lint]
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && contains(github.event.head_commit.modified, 'frontend/'))
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: preview
     steps:

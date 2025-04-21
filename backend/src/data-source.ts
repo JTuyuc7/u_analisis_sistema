@@ -12,9 +12,6 @@ dotenv.config();
 
 const useConnectionString = !!process.env.DATABASE_URL;
 
-console.log('Environment:', process.env.NODE_ENV || 'Development');
-console.log('Using connection string:', useConnectionString);
-
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: useConnectionString ? process.env.DATABASE_URL : undefined,

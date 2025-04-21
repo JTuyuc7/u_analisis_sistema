@@ -74,7 +74,6 @@ export async function getAllUserAccount(): Promise<IListAccountProps> {
 
 export async function getAccountByAccountNumber(state: IAccountFinderProps, formData: FormData, accountId: string,): Promise<IAccountFinderProps> {
   try {
-    console.log('from action getAccountByAccountNumber')
     const token = await getTokenFromCookie(); 
     if (!token) {
       return {
@@ -232,8 +231,6 @@ export async function getAllUserTransactions(): Promise<ITransactionStateRespons
         'Content-Type': 'application/json',
       },
     });
-
-    // console.log("🚀 ~ getAllUserTransactions ~ response:", response.data)
 
     if (response.status !== 200) {
       return {

@@ -90,8 +90,8 @@ export async function signupAction(formState: SignupUserState, formdata: FormDat
       },
       success: true,
     }
-  } catch (error) {
-    console.log(error, 'error')
+  } catch (error: unknown) {
+    const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Error al registrar usuario';
     return {
       state: {
         name: '',
@@ -101,7 +101,7 @@ export async function signupAction(formState: SignupUserState, formdata: FormDat
         address: '',
         password: '',
         confirm_pass: '',
-        msg: 'Error al registrar usuario',
+        msg: errorMessage,
       },
       success: false,
     }

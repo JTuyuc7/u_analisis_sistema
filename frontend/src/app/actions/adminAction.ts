@@ -108,7 +108,6 @@ export const getSystemStats = async (): Promise<AdminStatsResponse> => {
 export const getRecentUsers = async (): Promise<AdminUsersResponse> => {
   try {
     const response = await apiPrivateClient.get('/admin/recent-users');
-    console.log(response.data, 'response.data');
     return response.data;
   } catch (error) {
     console.error('Error fetching recent users:', error);
