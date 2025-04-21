@@ -15,6 +15,11 @@ export const processCardPayment = async (req: Request, res: Response): Promise<v
     return;
   }
 
+  if(isNaN(parsedAmount) || parsedAmount <= 0) {
+    res.status(400).json({ message: 'Invalid amount' });
+    return;
+  }
+
   // Validate card number format
   if (!/^\d{16}$/.test(card_number)) {
     res.status(400).json({ message: 'Invalid card number format' });
@@ -104,6 +109,11 @@ export const processAccountPayment = async (req: Request, res: Response): Promis
   // Input validation
   if (!account_number || !security_pin || !amount || !company_name) {
     res.status(400).json({ message: 'All fields are required' });
+    return;
+  }
+
+  if(isNaN(parsedAmount) || parsedAmount <= 0) {
+    res.status(400).json({ message: 'Invalid amount' });
     return;
   }
 
