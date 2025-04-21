@@ -1,0 +1,154 @@
+name: Lint and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+  pull_request:
+    branches: [master, preview]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+
+jobs:
+  backend-lint:
+    name: Backend ESLint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.files.*.path, 'backend/') || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'backend/'))
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+      
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run ESLint
+      run: npm run lint -- --max-warnings=0
+
+  frontend-lint:
+    name: Frontend ESLint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.files.*.path, 'frontend/') || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'frontend/'))
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+      
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run ESLint
+      run: npm run lint -- --max-warnings=0
+
+  # deploy-backend-vercel:
+  #   name: Deploy Backend to Vercel
+  #   needs: [backend-lint]
+  #   if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && contains(github.event.head_commit.modified, 'backend/'))
+  #   runs-on: ubuntu-latest
+  #   environment: preview
+  #   steps:
+  #     - name: 📥 Checkout repo
+  #       uses: actions/checkout@v3
+
+  #     - name: 🔧 Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
+  #         cache: 'npm'
+  #         cache-dependency-path: backend/package-lock.json
+
+  #     - name: 📦 Install dependencies
+  #       working-directory: ./backend
+  #       run: npm install
+
+  #     - name: 🔨 Build the app
+  #       working-directory: ./backend
+  #       run: npm run build
+
+  #     - name: 🚀 Deploy to Vercel
+  #       working-directory: ./backend
+  #       run: |
+  #         npm install -g vercel
+  #         vercel deploy --prod --yes --token=$VERCEL_TOKEN
+  #       env:
+  #         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  #         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  #         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-backend-render:
+    name: Deploy Backend to Render
+    needs: [backend-lint]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && contains(github.event.head_commit.modified, 'backend/'))
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # - name: Run migrations
+      #   working-directory: ./backend
+      #   run: npm run migrate:prod
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Trigger Render deployment
+        run: curl "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  deploy-frontend-render:
+    name: Deploy Frontend to Render
+    needs: [frontend-lint]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && contains(github.event.head_commit.modified, 'frontend/'))
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Trigger Render deployment
+        run: curl "$RENDER_FRONTEND_DEPLOY_HOOK"
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}

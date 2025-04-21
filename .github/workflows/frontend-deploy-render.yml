@@ -1,11 +1,11 @@
-name: Deploy Backend to Render
+name: Deploy Frontend to Render
 
 on:
   workflow_dispatch:
   # push:
   #   branches: [master]
   #   paths:
-  #     - backend/**
+  #     - frontend/**
 
 jobs:
   deploy:
@@ -30,6 +30,6 @@ jobs:
       #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Trigger Render deployment
-        run: curl "$RENDER_DEPLOY_HOOK"
+        run: curl "$RENDER_FRONTEND_DEPLOY_HOOK"
         env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
