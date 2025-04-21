@@ -49,7 +49,7 @@ export default function TransactionsMainPage({ transactions }: ITransactionsMain
   // Filter state
   const [typeFilter, setTypeFilter] = useState<string>(initialTypeFilter);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
-  const [skipUrlUpdate, setSkipUrlUpdate] = useState<Boolean>(false);
+  const [skipUrlUpdate, setSkipUrlUpdate] = useState<boolean>(false);
 
   // Update URL when filters change
   useEffect(() => {

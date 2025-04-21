@@ -1,7 +1,7 @@
 'use server'
 
 import { apiPublicClient } from '@/lib/api/apiClient'
-import { AuthInterface } from '@/lib/interfaces/authInteface'
+import { AuthInterface } from '@/lib/interfaces';
 import { z } from 'zod'
 
 export interface ApiError {

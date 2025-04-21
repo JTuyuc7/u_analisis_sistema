@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { startTransition, useActionState, useEffect } from 'react'
-import { useTheme } from '@/app/ClientThemeProvider'
 import {
   Container,
   Paper,
@@ -13,13 +12,12 @@ import {
   Box,
   Alert
 } from '@mui/material'
-import { Brightness4, Brightness7, PersonAdd } from '@mui/icons-material'
+import { PersonAdd } from '@mui/icons-material'
 import { signupAction } from '@/app/actions'
 
 export default function SignupPage() {
 
   const router = useRouter()
-  const { isDarkTheme, toggleTheme } = useTheme()
   const [formState, action, isPending] = useActionState(signupAction, {
     state: {
       name: '',

@@ -12,7 +12,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardHeader,
   Divider,
   Button,
   Table,
@@ -32,9 +31,6 @@ import {
   SwapHoriz as SwapHorizIcon,
   TrendingUp as TrendingUpIcon,
   Settings as SettingsIcon,
-  Description as DescriptionIcon,
-  ManageAccounts as ManageAccountsIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
   CreditCard as CreditCardIcon,
   AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material'
@@ -56,7 +52,7 @@ interface AdminStats {
   label: string;
   value: string;
   color: string;
-  icon: any;
+  icon: React.ElementType;
 }
 
 interface AdminUser {
@@ -86,7 +82,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Map icons to stats
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, React.ElementType> = {
     'Total Users': PeopleIcon,
     'Total Transactions': SwapHorizIcon,
     'Active Accounts': SettingsIcon,
@@ -135,6 +131,7 @@ export default function AdminPage() {
     }
 
     fetchAdminData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, router])
 
   if (!user?.admin) {
@@ -164,14 +161,14 @@ export default function AdminPage() {
   }
 
   // Fallback data if API calls fail
-  const fallbackStats = [
-    { label: 'Total Users', value: '0', icon: PeopleIcon, color: 'primary.main' },
-    { label: 'Total Transactions', value: '0', icon: SwapHorizIcon, color: 'success.main' },
-    { label: 'Monthly Growth', value: '0%', icon: TrendingUpIcon, color: 'secondary.main' },
-    { label: 'System Status', value: 'Unknown', icon: SettingsIcon, color: 'warning.main' },
-  ]
+  // const fallbackStats = [
+  //   { label: 'Total Users', value: '0', icon: PeopleIcon, color: 'primary.main' },
+  //   { label: 'Total Transactions', value: '0', icon: SwapHorizIcon, color: 'success.main' },
+  //   { label: 'Monthly Growth', value: '0%', icon: TrendingUpIcon, color: 'secondary.main' },
+  //   { label: 'System Status', value: 'Unknown', icon: SettingsIcon, color: 'warning.main' },
+  // ]
 
-  const displayStats = stats.length > 0 ? stats : fallbackStats
+  //const displayStats = stats.length > 0 ? stats : fallbackStats
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', py: 3 }}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   FormControl,
@@ -85,7 +85,8 @@ export default function CheckBalanceMainContent({ onHandleCancelView }: CheckBal
         setError(response.data.msg || "Failed to fetch card details");
         setCardDetails(null);
       }
-    } catch (err) {
+    } catch (error: unknown) {
+      console.error('Error fetching card details:', error);
       setError("An error occurred while fetching card details");
       setCardDetails(null);
     } finally {

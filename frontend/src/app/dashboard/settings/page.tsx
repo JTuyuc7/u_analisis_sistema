@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/lib/redux/store'
 import {
   Box,
   Typography,
@@ -16,9 +14,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  Stack,
-  Switch,
-  useTheme
+  Stack
 } from '@mui/material'
 import {
   Language as LanguageIcon,
@@ -28,10 +24,8 @@ import {
 } from '@mui/icons-material'
 
 export default function SettingsPage() {
-  const { user } = useSelector((state: RootState) => state.auth)
   const [language, setLanguage] = useState('english')
   const [theme, setTheme] = useState('light')
-  const currentTheme = useTheme()
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLanguage(event.target.value)

@@ -6,7 +6,6 @@ import { setUser } from '@/lib/redux/slices/authSlice'
 import Link from 'next/link'
 import { startTransition, useActionState, useEffect } from 'react'
 import { loginAction } from '@/app/actions'
-import { useTheme } from '@/app/ClientThemeProvider'
 import {
   Container,
   Paper,
@@ -14,16 +13,14 @@ import {
   TextField,
   Button,
   Box,
-  IconButton,
   Alert
 } from '@mui/material'
-import { Brightness4, Brightness7, Login } from '@mui/icons-material'
+import { Login } from '@mui/icons-material'
 import { AuthInterface } from '@/lib/interfaces'
 
 export default function LoginPage() {
   const router = useRouter()
   const dispatch = useDispatch()
-  const { isDarkTheme, toggleTheme } = useTheme()
 
   const [formState, action, isPending] = useActionState(loginAction, {
     state: { email: undefined, password: undefined, genericMsg: undefined },
@@ -44,6 +41,7 @@ export default function LoginPage() {
       dispatch(setUser({ user: formState.user as AuthInterface, token: formState.token  }))
       router.push('/dashboard/home')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.user, formState.success, dispatch, router])
 
   return (

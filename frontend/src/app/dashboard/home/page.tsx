@@ -87,7 +87,7 @@ export default function HomePage() {
         Welcome, {user?.first_name}!
       </Typography>
       <Typography variant="body1" sx={{ mb: 4 }}>
-        Here's a quick overview of your account activity.
+        {"Here's a quick overview of your account activity."}
       </Typography>
 
       {/* Stats Card */}
