@@ -2,7 +2,6 @@
 
 import { Provider } from 'react-redux'
 import { store } from '@/lib/redux/store'
-import { SessionProvider } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { ReactNode } from 'react'
 

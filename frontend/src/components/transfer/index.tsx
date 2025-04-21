@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material'
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { IAccountFinderProps, ISingleAccountFinderProps, ISingleAccountProps, TransferFormData } from "@/lib/interfaces";
+import { IAccountFinderProps, ISingleAccountFinderProps, TransferFormData } from "@/lib/interfaces";
 import RenderAccountList from "./renderAccountList";
 import trasnferAction from "@/app/actions/transferAction";
 import { debounce } from "@/lib/utils/utils";
@@ -174,7 +174,7 @@ export default function TransferPage({ onHandleCancelView }: TransferPageProps) 
       <RenderContent title="" titleColor="primary.main">
         <Box sx={{ textAlign: 'center', mt: 2 }}>
           <Typography variant="body1" color="text.secondary">
-            You don't have any accounts to transfer money from. Please create an account first.
+            {"You don't have any accounts to transfer money from. Please create an account first."}
           </Typography>
         </Box>
       </RenderContent>

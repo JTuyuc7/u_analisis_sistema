@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { AuthInterface } from '../interfaces/authInteface';
+import { AuthInterface } from '../interfaces';
 
 export const COOKIE_NAME = 'auth_token';
 export const USER_COOKIE_NAME = 'user';

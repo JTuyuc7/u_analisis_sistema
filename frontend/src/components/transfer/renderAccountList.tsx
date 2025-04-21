@@ -12,7 +12,7 @@ interface IRenderPageProps {
 }
 
 export default function RenderAccountList({ accounts, errors, formData, handleFromAccountChange, title }: IRenderPageProps) {
-  const handleAccountChange = (e: SelectChangeEvent<String>) => {
+  const handleAccountChange = (e: SelectChangeEvent<string>) => {
     const findAccount = accounts.find(account => account.account_number === e.target.value);
     if (findAccount) {
       handleFromAccountChange(findAccount.account_id.toString(), findAccount.account_number, findAccount.balance.toString());

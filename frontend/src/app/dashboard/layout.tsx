@@ -5,9 +5,9 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/redux/store'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Box, useTheme, useMediaQuery } from '@mui/material'
+import { Box, useTheme } from '@mui/material'
 
-const DRAWER_WIDTH = 250
+// const DRAWER_WIDTH = 250
 const APPBAR_HEIGHT = 64
 
 export default function DashboardLayout({
@@ -18,7 +18,7 @@ export default function DashboardLayout({
   const { isAuthenticated } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  // const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   useEffect(() => {
     if (!isAuthenticated) {
