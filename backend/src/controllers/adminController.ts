@@ -179,7 +179,6 @@ export const getRecentUsers = async (req: Request, res: Response): Promise<void>
           details: `Admin viewed recent users list (${recentUsers.length} users)`
         }));
       }
-      // console.log(recentUsers, 'recentUsers');
       return recentUsers.map(user => ({
         id: user.id.toString(),
         name: `${user.firstname} ${user.lastname}`,

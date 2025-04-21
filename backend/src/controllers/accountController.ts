@@ -210,8 +210,6 @@ export const transferMoney = async (req: Request, res: Response): Promise<void> 
 
 // List all transactions for a given account
 export const listTransactionsByAccountNumber = async (req: Request, res: Response): Promise<void> => {
-  console.log(req.params.accountId, 'from listTransactionsByAccountNumber');
-  // Ensure accountId is a valid number
   const accountId = req.params.accountId;
   
   if (!accountId) {
@@ -523,8 +521,6 @@ export const listCustomerTransactions = async (req: Request, res: Response): Pro
         .orderBy('transaction.transaction_date', 'DESC')
         .getMany();
       
-      console.log(`Found ${transactions.length} transactions for customer ${customer.customer_id}`);
-
       // Create audit log
       await auditLogRepository.save(auditLogRepository.create({
         customer,
@@ -534,7 +530,6 @@ export const listCustomerTransactions = async (req: Request, res: Response): Pro
 
       return transactions || [];
     });
-    console.log('Transaction list:', transactionList);
     res.status(200).json({ transactionList, msg: 'Listed customer transactions successfully' });
   } catch (error) {
     console.error('Error listing customer transactions:', error);
