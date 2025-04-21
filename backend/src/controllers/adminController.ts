@@ -44,13 +44,13 @@ export const getLastTransaction = async (req: Request, res: Response): Promise<v
       // Format the transaction data for the frontend
       return {
         id: `TX${transaction.transaction_id.toString().padStart(6, '0')}`,
-        date: transaction.transaction_date,
-        amount: `$${parseFloat(transaction.amount.toString()).toFixed(2)}`,
-        type: transaction.transaction_type,
+        date: transaction.transaction_date || 'N/A',
+        amount: `$${parseFloat(transaction.amount.toString()).toFixed(2)}` || 'N/A',
+        type: transaction.transaction_type || 'N/A',
         customer: {
-          name: `${transaction.customer.first_name} ${transaction.customer.last_name}`,
-          email: transaction.customer.email,
-          accountNumber: `****${transaction.account.account_number.slice(-4)}`
+          name: `${transaction.customer.first_name} ${transaction.customer.last_name}` || 'N/A',
+          email: transaction.customer.email || 'N/A',
+          accountNumber: `****${transaction.account.account_number.slice(-4)} ` || 'N/A',
         }
       };
     });

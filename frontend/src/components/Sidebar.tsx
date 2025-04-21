@@ -147,7 +147,7 @@ const Sidebar = () => {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap component="div">
-              Dashboard
+              {"Dashboard"}
             </Typography>
           </Toolbar>
         </AppBar>

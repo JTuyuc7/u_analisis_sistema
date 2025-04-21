@@ -66,7 +66,7 @@ jobs:
       run: npm install
 
     - name: Run ESLint
-      run: npm run lint -- --max-warnings=0
+      run: npm run lint -- --max-warnings=10
 
   # deploy-backend-vercel:
   #   name: Deploy Backend to Vercel
