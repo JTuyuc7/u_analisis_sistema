@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { getLastTransaction, getSystemStats, getRecentUsers } from '../controllers/adminController';
+import { 
+  getLastTransaction, 
+  getSystemStats, 
+  getRecentUsers,
+  createRevenueAccount,
+  getRevenueAccounts,
+  getRevenueAccountDetails,
+  createCompanyUser
+} from '../controllers/adminController';
 import { authenticateToken, isAdmin } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -113,5 +121,162 @@ router.get('/stats', authenticateToken, isAdmin, getSystemStats);
  *         description: Server error
  */
 router.get('/recent-users', authenticateToken, isAdmin, getRecentUsers);
+
+/**
+ * @swagger
+ * /api/admin/revenue-account:
+ *   post:
+ *     summary: Create a new revenue account for a company
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - account_name
+ *               - associated_company
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email for the revenue account
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Password for the revenue account
+ *               account_name:
+ *                 type: string
+ *                 description: Name for the revenue account
+ *               associated_company:
+ *                 type: string
+ *                 description: Name of the company associated with this revenue account
+ *     responses:
+ *       201:
+ *         description: Revenue account created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Server error
+ */
+router.post('/revenue-account', authenticateToken, isAdmin, createRevenueAccount);
+
+/**
+ * @swagger
+ * /api/admin/revenue-accounts:
+ *   get:
+ *     summary: Get all revenue accounts
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Revenue accounts retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Server error
+ */
+router.get('/revenue-accounts', authenticateToken, isAdmin, getRevenueAccounts);
+
+/**
+ * @swagger
+ * /api/admin/revenue-account/{id}:
+ *   get:
+ *     summary: Get details of a specific revenue account
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Revenue account ID
+ *     responses:
+ *       200:
+ *         description: Revenue account details retrieved successfully
+ *       400:
+ *         description: Invalid account ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Revenue account not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/revenue-account/:id', authenticateToken, isAdmin, getRevenueAccountDetails);
+
+/**
+ * @swagger
+ * /api/admin/create-company-user:
+ *   post:
+ *     summary: Create a company user with an associated revenue account
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - first_name
+ *               - last_name
+ *               - email
+ *               - password
+ *               - company_name
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *                 description: First name of the company user
+ *               last_name:
+ *                 type: string
+ *                 description: Last name of the company user
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email for the company user
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Password for the company user
+ *               phone:
+ *                 type: string
+ *                 description: Phone number for the company user (optional)
+ *               address:
+ *                 type: string
+ *                 description: Address for the company user (optional)
+ *               company_name:
+ *                 type: string
+ *                 description: Name of the company
+ *     responses:
+ *       201:
+ *         description: Company user and revenue account created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Server error
+ */
+router.post('/create-company-user', authenticateToken, isAdmin, createCompanyUser);
 
 export default router;
