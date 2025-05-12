@@ -1,5 +1,31 @@
 import { apiPrivateClient } from '@/lib/api/apiClient';
 
+interface CreateCompanyUserParams {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  company_name: string;
+  phone?: string;
+  address?: string;
+}
+
+interface CreateCompanyUserResponse {
+  success: boolean;
+  data: {
+    msg: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    user?: any;
+    account?: {
+      account_id: string;
+      account_number: string;
+      account_name: string;
+      associated_company: string;
+      security_pin: string;
+    };
+  };
+}
+
 interface AdminTransaction {
   id: string;
   date: string;
@@ -116,6 +142,24 @@ export const getRecentUsers = async (): Promise<AdminUsersResponse> => {
       data: {
         users: [],
         msg: 'Error fetching recent users'
+      }
+    };
+  }
+};
+
+/**
+ * Creates a new company user with an associated revenue account
+ */
+export const createCompanyUser = async (params: CreateCompanyUserParams): Promise<CreateCompanyUserResponse> => {
+  try {
+    const response = await apiPrivateClient.post('/admin/create-company-user', params);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating company user:', error);
+    return {
+      success: false,
+      data: {
+        msg: 'Error creating company user. Please try again.'
       }
     };
   }

@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import { PersonAdd } from '@mui/icons-material'
 import { signupAction } from '@/app/actions'
+import ToolTipComponent from '@/components/ui/ToolTip'
 
 export default function SignupPage() {
 
@@ -65,9 +66,25 @@ export default function SignupPage() {
           </IconButton>
         </Box> */}
 
-        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-          Crear cuenta
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 3
+            // mb: 3,
+            // position: 'relative'
+          }}
+        >
+
+          <Typography component="h1" variant="h5" >
+            Crear cuenta
+          </Typography>
+
+          <ToolTipComponent title='If you are a company and want to get a company account, contact the bank admin.' />
+          
+        </Box>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
           {formState.state.msg && (
@@ -121,7 +138,7 @@ export default function SignupPage() {
             name="email"
             autoComplete="email"
             type="email"
-            // autoFocus
+          // autoFocus
           />
 
           <Box

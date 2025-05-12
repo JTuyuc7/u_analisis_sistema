@@ -493,6 +493,12 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
         .where('account.status = :status', { status: 'active' })
         .getCount();
       
+      // Get total company accounts
+      const totalCompanyAccounts = await accountRepository
+        .createQueryBuilder('account')
+        .where('account.is_revenue_account = :isRevenueAccount', { isRevenueAccount: true })
+        .getCount();
+      
       // Calculate monthly growth (placeholder - would need more complex logic in real app)
       // This is a simplified example - in a real app, you'd compare with previous month's data
       // const monthlyGrowth = '+12.5%';
@@ -512,6 +518,7 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
         { label: 'Total Users', value: totalUsers.toString(), color: 'primary.main' },
         { label: 'Total Transactions', value: totalTransactions.toString(), color: 'success.main' },
         { label: 'Active Accounts', value: totalAccounts.toString(), color: 'secondary.main' },
+        { label: 'Company Accounts', value: totalCompanyAccounts.toString() ?? 0, color: 'warning.main' }
         // { label: 'Monthly Growth', value: monthlyGrowth, color: 'warning.main' }
       ];
     });
