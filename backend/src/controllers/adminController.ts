@@ -6,6 +6,8 @@ import { AuditLog } from '../entities/AuditLog';
 import { AppDataSource } from '../data-source';
 import * as bcrypt from 'bcrypt';
 import { generateAccountNumber } from '../utils/generateAccountNumber';
+import { generateCardDetails } from '../utils/generateCardDetails';
+import { Card } from '../entities/Card';
 
 /**
  * Admin controller for handling admin-specific operations
@@ -79,13 +81,34 @@ export const createCompanyUser = async (req: Request, res: Response): Promise<vo
       account.customer = customer;
       account.account_number = accountNumber;
       account.account_type = 'company_revenue';
-      account.account_name = `${company_name} Revenue Account`;
+      account.account_name = `${company_name}`;
       account.balance = 0;
       account.status = 'active';
       account.security_pin = hashedPin;
       account.is_revenue_account = true;
       account.associated_company = company_name;
       await accountRepository.save(account);
+
+      // await transactionalEntityManager.save(account);
+
+      // Create default card
+      const cardDetails = generateCardDetails();
+      const cardRepository = transactionalEntityManager.getRepository(Card);
+      const newCard = cardRepository.create({
+        card_number: cardDetails.cardNumber,
+        expiration_date: cardDetails.expirationDate,
+        security_code: cardDetails.securityCode,
+        account: account,
+        status: 'active'
+      });
+      await transactionalEntityManager.save(newCard);
+
+      // Create audit log
+      await auditLogRepository.save(auditLogRepository.create({
+        customer,
+        operation: 'ACCOUNT_CREATION',
+        details: `Created new company_revenue account: ${accountNumber} with default card`
+      }));
 
       // Get admin user for audit log
       const adminUser = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
@@ -416,7 +439,7 @@ export const getLastTransaction = async (req: Request, res: Response): Promise<v
       }
 
       const transaction = transactions[0];
-      
+
       // Get admin user for audit log
       const adminUser = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
       if (adminUser) {
@@ -427,7 +450,7 @@ export const getLastTransaction = async (req: Request, res: Response): Promise<v
           details: `Admin viewed last transaction (ID: ${transaction.transaction_id})`
         }));
       }
-      
+
       // Format the transaction data for the frontend
       return {
         id: `TX${transaction.transaction_id.toString().padStart(6, '0')}`,
@@ -480,29 +503,29 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
       const transactionRepository = transactionalEntityManager.getRepository(Transaction);
       const accountRepository = transactionalEntityManager.getRepository(Account);
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
-      
+
       // Get total users count
       const totalUsers = await customerRepository.count();
-      
+
       // Get total transactions count
       const totalTransactions = await transactionRepository.count();
-      
+
       // Get total active accounts
       const totalAccounts = await accountRepository
         .createQueryBuilder('account')
         .where('account.status = :status', { status: 'active' })
         .getCount();
-      
+
       // Get total company accounts
       const totalCompanyAccounts = await accountRepository
         .createQueryBuilder('account')
         .where('account.is_revenue_account = :isRevenueAccount', { isRevenueAccount: true })
         .getCount();
-      
+
       // Calculate monthly growth (placeholder - would need more complex logic in real app)
       // This is a simplified example - in a real app, you'd compare with previous month's data
       // const monthlyGrowth = '+12.5%';
-      
+
       // Get admin user for audit log
       const adminUser = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
       if (adminUser) {
@@ -513,7 +536,7 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
           details: 'Admin viewed system statistics'
         }));
       }
-      
+
       return [
         { label: 'Total Users', value: totalUsers.toString(), color: 'primary.main' },
         { label: 'Total Transactions', value: totalTransactions.toString(), color: 'success.main' },
@@ -522,7 +545,7 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
         // { label: 'Monthly Growth', value: monthlyGrowth, color: 'warning.main' }
       ];
     });
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -549,7 +572,7 @@ export const getRecentUsers = async (req: Request, res: Response): Promise<void>
     const result = await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
       const customerRepository = transactionalEntityManager.getRepository(Customer);
       const auditLogRepository = transactionalEntityManager.getRepository(AuditLog);
-      
+
       const recentUsers = await customerRepository
         .createQueryBuilder('customer')
         .select([
@@ -562,7 +585,7 @@ export const getRecentUsers = async (req: Request, res: Response): Promise<void>
         .orderBy('customer.created_at', 'DESC')
         .limit(5)
         .getRawMany();
-      
+
       // Get admin user for audit log
       const adminUser = await customerRepository.findOne({ where: { customer_id: req.user?.id } });
       if (adminUser) {
@@ -580,7 +603,7 @@ export const getRecentUsers = async (req: Request, res: Response): Promise<void>
         joinDate: user.joindate,
       }));
     });
-    
+
     res.status(200).json({
       success: true,
       data: {

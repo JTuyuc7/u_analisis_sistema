@@ -11,6 +11,7 @@ import { setAccounts } from '@/lib/redux/slices/accountSlice'
 import CreateAccount from '../createAccounts'
 import TransferPage from '../transfer'
 import CheckBalanceMainContent from '../checkBalance'
+import ToolTipComponent from '../ui/ToolTip'
 
 interface createAccountProps {
   accounts?: IAccountDataProps[]
@@ -45,6 +46,7 @@ const CheckBalance = ({onHandleCancelView}: ViewContentProps) => (
 )
 
 export default function OperationsMainPage({ accounts = [] }: createAccountProps) {
+  console.log("🚀 ~ OperationsMainPage ~ accounts:", accounts)
   const router = useRouter()
   const searchParams = useSearchParams()
   const actionParam = searchParams.get('action')
@@ -94,9 +96,11 @@ export default function OperationsMainPage({ accounts = [] }: createAccountProps
     }
   }
 
+  const isCompanyRevenue = accounts[0]?.account_type === 'company_revenue'
+
   return (
     <Stack spacing={3} sx={{ maxWidth: 'md', margin: '0 auto', width: '100%' }}>
-      <h1 className="text-3xl font-bold">Operations</h1>
+      <h1 className="text-3xl font-bold">Operations {isCompanyRevenue && <ToolTipComponent title='Companies can only have 1 main revenue account' />} </h1>
       <FormControl fullWidth>
         <InputLabel id="action-select-label">Select Action</InputLabel>
         <Select
@@ -105,7 +109,7 @@ export default function OperationsMainPage({ accounts = [] }: createAccountProps
           onChange={handleActionChange}
           label="Select Action"
         >
-          <MenuItem value="create-account">Create New Account</MenuItem>
+          <MenuItem disabled={isCompanyRevenue} value="create-account"> Create New Account </MenuItem>
           <MenuItem value="make-transfer">Make Transfer</MenuItem>
           <MenuItem value="check-balance">Check Balance</MenuItem>
           <MenuItem hidden value="default-view">Choose something</MenuItem>
