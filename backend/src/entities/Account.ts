@@ -30,6 +30,12 @@ export class Account {
   @Column({ length: 255 })
     security_pin: string;
 
+  @Column({ default: false })
+    is_revenue_account: boolean;
+
+  @Column({ nullable: true, length: 255 })
+    associated_company: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
     created_at: Date;
 

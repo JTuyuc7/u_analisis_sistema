@@ -16,7 +16,7 @@ export class Transaction {
       customer: Customer;
 
     @Column()
-      transaction_type: string;  // 'deposit', 'withdrawal', 'transfer'
+      transaction_type: string;  // 'deposit', 'withdrawal', 'transfer', 'card_payment', 'account_payment'
 
     @Column('decimal', { precision: 15, scale: 2 })
       amount: number;
@@ -26,6 +26,12 @@ export class Transaction {
 
     @Column({ nullable: true })
       related_account_id: number;  // For transfers, stores the other account involved
+
+    @Column({ default: false })
+      is_revenue_transaction: boolean;
+
+    @Column({ nullable: true })
+      revenue_account_id: number;  // For revenue transactions, stores the revenue account ID
 
     @CreateDateColumn({ type: 'timestamptz' })
       transaction_date: Date;
