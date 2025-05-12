@@ -518,7 +518,7 @@ export const getSystemStats = async (req: Request, res: Response): Promise<void>
         { label: 'Total Users', value: totalUsers.toString(), color: 'primary.main' },
         { label: 'Total Transactions', value: totalTransactions.toString(), color: 'success.main' },
         { label: 'Active Accounts', value: totalAccounts.toString(), color: 'secondary.main' },
-        { label: 'Company Accounts', value: totalCompanyAccounts.toString() ?? '0', color: 'warning.main' }
+        { label: 'Company Accounts', value: totalCompanyAccounts.toString() ?? 0, color: 'warning.main' }
         // { label: 'Monthly Growth', value: monthlyGrowth, color: 'warning.main' }
       ];
     });
