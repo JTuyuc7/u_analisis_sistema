@@ -22,12 +22,21 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Enable CORS
-app.use(cors({
-  origin: process.env.FRONTEND_URL, // your frontend URL
-  credentials: true, // to allow credentials
+const restrictedCorsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+const openCorsOptions = {
+  origin: '*', // Allow any origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Apply restricted CORS to all routes by default
+app.use(cors(restrictedCorsOptions));
 
 // Middleware
 app.use(express.json());
@@ -45,13 +54,16 @@ const initializeDb = async () => {
 
 // Initialize database before setting up routes
 initializeDb().then(() => {
+
+  app.use('/api/payments', cors(openCorsOptions), paymentRoutes);
+
   // Routes
   app.use('/api/customers', customerRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/accounts', accountRoutes);
   app.use('/api', profileRoutes);
   app.use('/api', seedRoutes);
-  app.use('/api/payments', paymentRoutes);
+  // app.use('/api/payments', paymentRoutes);
   app.use('/api/admin', adminRoutes);
   app.use('/api/test', testRoutes);
 
